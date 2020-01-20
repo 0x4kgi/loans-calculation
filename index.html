@@ -140,9 +140,23 @@
             if(value.length > 0) {
                 delay = setTimeout(function () {
                     let monthData = monthsArray[monthIndex];
-                    console.log(monthData, value, value.length);
+                    
+                    monthData.payment = value;
+                    monthData.interestValue = monthData.balance * (monthData.interestRate / 12);
+                    monthData.principal = (monthData.payment - monthData.interestValue > 0) 
+                        ? monthData.payment - monthData.interestValue 
+                        : 0;
+                    monthData.newBalance = monthData.balance - monthData.principal; 
+
+                    monthsArray[monthIndex] = monthData;
+
+                    updateTable(monthIndex);
                 }, 500);
             }
+        }
+
+        function updateTable(monthIndex) {
+
         }
 
         function PMT({rate, term, loan}) {
