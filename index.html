@@ -26,11 +26,20 @@
             </div>
             <div class="input-group col-sm">
                 <div class="input-group-prepend">
-                    <span class="input-group-text">Interest Rate:</span>
+                    <span class="input-group-text">Interest:</span>
                 </div>                
                 <input type="text" class="form-control" placeholder="2.5" id="txtInterest">
                 <div class="input-group-append">
-                    <span class="input-group-text">%</span>
+                    <span class="input-group-text">% per month</span>
+                </div>
+            </div>
+            <div class="input-group col-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Interest:</span>
+                </div>                
+                <input type="text" class="form-control" placeholder="2.5" id="txtInterestAnnum" readonly>
+                <div class="input-group-append">
+                    <span class="input-group-text">% per annum</span>
                 </div>
             </div>
             <div class="input-group col-sm">
@@ -41,8 +50,11 @@
                 <div class="input-group-append">
                     <span class="input-group-text">years</span>
                 </div>
-            </div>
-            <div class="col-sm">
+            </div>                      
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xm-12">
                 <button type="button" class="btn btn-primary" id="btnUpdateTable">Set Values</button>
             </div>
         </div>        
@@ -70,6 +82,7 @@
         const DEFAULT_LOAN_AMOUNT = 10000;
         const DEFAULT_INTEREST = 2.5;
         const DEFAULT_YEARS = 3;
+        const DEFAULT_PAYMENT = 0;
 
         var monthsArray = [];
 
@@ -137,26 +150,51 @@
             let value = control.value;
 
             clearTimeout(delay);
-            if(value.length > 0) {
-                delay = setTimeout(function () {
-                    let monthData = monthsArray[monthIndex];
-                    
-                    monthData.payment = value;
-                    monthData.interestValue = monthData.balance * (monthData.interestRate / 12);
-                    monthData.principal = (monthData.payment - monthData.interestValue > 0) 
-                        ? monthData.payment - monthData.interestValue 
-                        : 0;
-                    monthData.newBalance = monthData.balance - monthData.principal; 
+            delay = setTimeout(function () {
 
-                    monthsArray[monthIndex] = monthData;
+                let monthData = monthsArray[monthIndex];
+                
+                monthData.payment = value || DEFAULT_PAYMENT;
+                monthData.interestValue = monthData.balance * (interestRate / 12);
+                monthData.principal = monthData.payment - monthData.interestValue;
+                monthData.newBalance = monthData.balance - monthData.principal; 
 
-                    updateTable(monthIndex);
-                }, 500);
+                monthsArray[monthIndex] = monthData;
+                updateTableDisplay(monthIndex);
+                updateTableData(monthIndex);
+            }, 250);
+        }
+
+        function updateTableData(monthIndex) {
+            for (let m = monthIndex + 1; m <= monthsCount; m += 1) {
+                let previousMonthData = monthsArray[m - 1];
+                let currentMonthData = monthsArray[m];
+
+                currentMonthData.balance = previousMonthData.newBalance;
+                currentMonthData.toPay = PMT({
+                    rate: interestRate,
+                    term: monthsCount - m,
+                    loan: currentMonthData.balance
+                });
+                currentMonthData.payment = $(`input#payment${m}`).val() || DEFAULT_PAYMENT;
+                currentMonthData.interestValue = currentMonthData.balance * (interestRate / 12);
+                currentMonthData.principal = currentMonthData.payment - currentMonthData.interestValue// > 0) 
+                    //? currentMonthData.payment - currentMonthData.interestValue 
+                    //: 0;
+                currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
+
+                monthsArray[m] = currentMonthData;
+
+                updateTableDisplay(m);
             }
         }
 
-        function updateTable(monthIndex) {
-
+        function updateTableDisplay(monthIndex) {
+            $(`td#balance${monthIndex}`).html(numberFormat(monthsArray[monthIndex].balance));
+            $(`td#payment${monthIndex}`).html(numberFormat(monthsArray[monthIndex].toPay));
+            $(`td#interest${monthIndex}`).html(numberFormat(monthsArray[monthIndex].interestValue));
+            $(`td#principal${monthIndex}`).html(numberFormat(monthsArray[monthIndex].principal));
+            $(`td#newBalance${monthIndex}`).html(numberFormat(monthsArray[monthIndex].newBalance));
         }
 
         function PMT({rate, term, loan}) {
