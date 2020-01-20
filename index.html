@@ -112,9 +112,12 @@
                         balance, toPay, interestValue, principal, newBalance
                     });   
                     
-                    balance = newBalance;
+                    balance = newBalance;                    
                 }
+                totalAnnumInterest();
             });
+
+            //totalAnnumInterest();
         });
 
         function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
@@ -138,6 +141,7 @@
                     <td id="newBalance${month}">${numberFormat(monthsArray[month].newBalance)}</td>
                 </tr>
             `);
+            
         }
 
         function resetTable() {
@@ -149,26 +153,24 @@
         function paymentTextChange(control,monthIndex) {
             let value = control.value;
 
-            clearTimeout(delay);
-            delay = setTimeout(function () {
+            let monthData = monthsArray[monthIndex];
+            
+            monthData.payment = value || DEFAULT_PAYMENT;
+            monthData.interestValue = monthData.balance * (interestRate / 12);
+            monthData.principal = monthData.payment - monthData.interestValue;
+            monthData.newBalance = monthData.balance - monthData.principal; 
 
-                let monthData = monthsArray[monthIndex];
-                
-                monthData.payment = value || DEFAULT_PAYMENT;
-                monthData.interestValue = monthData.balance * (interestRate / 12);
-                monthData.principal = monthData.payment - monthData.interestValue;
-                monthData.newBalance = monthData.balance - monthData.principal; 
-
-                monthsArray[monthIndex] = monthData;
-                updateTableDisplay(monthIndex);
-                updateTableData(monthIndex);
-            }, 250);
+            monthsArray[monthIndex] = monthData;
+            updateTableDisplay(monthIndex);
+            updateTableData(monthIndex);
         }
 
         function updateTableData(monthIndex) {
             for (let m = monthIndex + 1; m <= monthsCount; m += 1) {
                 let previousMonthData = monthsArray[m - 1];
                 let currentMonthData = monthsArray[m];
+
+                if (currentMonthData === undefined) break;
 
                 currentMonthData.balance = previousMonthData.newBalance;
                 currentMonthData.toPay = PMT({
@@ -178,9 +180,7 @@
                 });
                 currentMonthData.payment = $(`input#payment${m}`).val() || DEFAULT_PAYMENT;
                 currentMonthData.interestValue = currentMonthData.balance * (interestRate / 12);
-                currentMonthData.principal = currentMonthData.payment - currentMonthData.interestValue// > 0) 
-                    //? currentMonthData.payment - currentMonthData.interestValue 
-                    //: 0;
+                currentMonthData.principal = currentMonthData.payment - currentMonthData.interestValue;
                 currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
 
                 monthsArray[m] = currentMonthData;
@@ -204,22 +204,26 @@
 
         function numberFormat(number, places = 2) {
             let rounded =  Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
-            if(!(rounded.toString().indexOf(".") > -1)) {
-                rounded += ".";
-                
-                for (let i = 0; i < places; i++) {
-                    rounded += "0";
-                }
-            } else {
-                let decimals = rounded.toString().split(".")[1];
+            
+            num = parseFloat(rounded).toLocaleString(undefined, {maximumFractionDigits:places});
 
-                if(decimals.length < places) {
-                    for (let i = 0; i < places - decimals.length; i++) {
-                        rounded += "0";
-                    }
-                }
+            let decimals = num.toString().split(".")[1];
+            if(decimals === undefined){
+                num += ".".padEnd(places + 1, 0);
+            } else if(decimals.length < places) {
+                num += "0".padEnd(places - decimals.length);
             }
-            return rounded;
+
+            return num;
+        }
+
+        function totalAnnumInterest() {
+            var interestTotal = 0;
+            monthsArray.forEach((item) => {
+                interestTotal += item.interestValue;
+                console.log(item, item.interestValue);
+            });
+            console.log(interestTotal);
         }
     </script>    
 </body>
