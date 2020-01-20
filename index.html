@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="css/vendors/css.css">
+
+    <title>Loan calculation</title>
+</head>
+<body>
+    <h3>Loans Calculator</h3>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="input-group col-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Loan Amount:</span>
+                </div>
+                <div class="input-group-prepend">
+                    <span class="input-group-text">$</span>
+                </div>
+                <input type="text" class="form-control" placeholder="10000" id="txtLoans">
+            </div>
+            <div class="input-group col-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Interest Rate:</span>
+                </div>                
+                <input type="text" class="form-control" placeholder="2.5" id="txtInterest">
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+            <div class="input-group col-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Terms:</span>
+                </div>                
+                <input type="text" class="form-control" placeholder="3" id="txtYears">
+                <div class="input-group-append">
+                    <span class="input-group-text">years</span>
+                </div>
+            </div>
+            <div class="col-sm">
+                <button type="button" class="btn btn-primary" id="btnUpdateTable">Set Values</button>
+            </div>
+        </div>        
+    </div>
+    <br>
+    <div class="container">
+        <div class="row">
+            <table class="table table-bordered col-sm" id="tblLoans">
+                <tr>
+                    <th>Month #</th>
+                    <th>Balance</th>
+                    <th>Amount to pay</th>
+                    <th>Payment</th>
+                    <th>Interest</th>
+                    <th>Principal</th>
+                    <th>New Balance</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    
+    <script src="scripts/vendors/js.js"></script>
+    <script>
+        const DEFAULT_LOAN_AMOUNT = 10000;
+        const DEFAULT_INTEREST = 2.5;
+        const DEFAULT_YEARS = 3;
+
+        $(document).ready(function() {
+            $("button#btnUpdateTable").on("click", function() {
+                let loanAmount = $("input#txtLoans").val() || DEFAULT_LOAN_AMOUNT;
+                let interestRate = ($("input#txtInterest").val() || DEFAULT_INTEREST) / 100;
+                let months = ($("input#txtYears").val() || DEFAULT_YEARS) * 12;
+
+                $("table#tblLoans").find("tr:gt(0)").remove();
+
+                let balance = loanAmount;
+                let toPay = PMT({rate: interestRate, term: months, loan: loanAmount});
+                for (let i = 0; i < months; i += 1) {
+                    
+                    let payment = 0;
+                    let interestValue = balance * (interestRate / 12);
+                    let principal = (payment - interestValue > 0) ? payment - interestValue : 0;
+                    let newBalance = balance - principal;                    
+
+                    appendToTable({
+                        month: i + 1,
+                        balance, toPay, interestValue, principal, newBalance
+                    });   
+                    
+                    balance = newBalance;
+                }
+            });
+        });
+
+        function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
+            $("table#tblLoans").append(`
+                <tr id="rowMonth${month}">
+                    <td>${month}</td>
+                    <td id="balance${month}">${numberFormat(balance)}</td>
+                    <td id="payment${month}">${numberFormat(toPay)}</td>
+                    <td>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            placeholder="${numberFormat(toPay)}" 
+                            id="payment${month}"
+                        >
+                    </td>
+                    <td id="interest${month}">${numberFormat(interestValue)}</td>
+                    <td id="principal${month}">${numberFormat(principal)}</td>
+                    <td id="newBalance${month}">${numberFormat(newBalance)}</td>
+                </tr>
+            `);
+        }
+
+        function PMT({rate, term, loan}) {
+            rate = rate / 12;
+            return rate * (-loan) * Math.pow((1 + rate), term) / (1 - Math.pow((1 + rate), term))
+        }
+
+        function numberFormat(number, places = 2) {
+            let rounded =  Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
+            if(!(rounded.toString().indexOf(".") > -1)) {
+                rounded += ".";
+                
+                for (let i = 0; i < places; i++) {
+                    rounded += "0";
+                }
+            } else {
+                let decimals = rounded.toString().split(".")[1];
+
+                if(decimals.length < places) {
+                    for (let i = 0; i < places - decimals.length; i++) {
+                        rounded += "0";
+                    }
+                }
+            }
+            return rounded;
+        }
+    </script>    
+</body>
+</html>
