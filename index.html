@@ -71,18 +71,24 @@
         const DEFAULT_INTEREST = 2.5;
         const DEFAULT_YEARS = 3;
 
+        var monthsArray = [];
+
+        let loanAmount = DEFAULT_LOAN_AMOUNT;
+        let interestRate = DEFAULT_INTEREST / 100;
+        let monthsCount = DEFAULT_YEARS * 12;
+
         $(document).ready(function() {
             $("button#btnUpdateTable").on("click", function() {
-                let loanAmount = $("input#txtLoans").val() || DEFAULT_LOAN_AMOUNT;
-                let interestRate = ($("input#txtInterest").val() || DEFAULT_INTEREST) / 100;
-                let months = ($("input#txtYears").val() || DEFAULT_YEARS) * 12;
+                loanAmount = $("input#txtLoans").val() || DEFAULT_LOAN_AMOUNT;
+                interestRate = ($("input#txtInterest").val() || DEFAULT_INTEREST) / 100;
+                monthsCount = ($("input#txtYears").val() || DEFAULT_YEARS) * 12;
 
-                $("table#tblLoans").find("tr:gt(0)").remove();
+                resetTable();
 
                 let balance = loanAmount;
-                let toPay = PMT({rate: interestRate, term: months, loan: loanAmount});
-                for (let i = 0; i < months; i += 1) {
-                    
+                
+                for (let i = 0; i < monthsCount; i += 1) {
+                    let toPay = PMT({rate: interestRate, term: monthsCount - i, loan: loanAmount});
                     let payment = 0;
                     let interestValue = balance * (interestRate / 12);
                     let principal = (payment - interestValue > 0) ? payment - interestValue : 0;
@@ -99,10 +105,11 @@
         });
 
         function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
+            monthsArray.push({month, balance, toPay, interestValue, principal, newBalance, payment: 0});
             $("table#tblLoans").append(`
                 <tr id="rowMonth${month}">
                     <td>${month + 1}</td>
-                    <td id="balance${month}">${numberFormat(balance)}</td>
+                    <td id="balance${month}">${numberFormat(monthsArray[month].balance)}</td>
                     <td id="payment${month}">${numberFormat(toPay)}</td>
                     <td>
                         <input 
@@ -113,15 +120,29 @@
                             onKeyUp="paymentTextChange(this,${month})"
                         >
                     </td>
-                    <td id="interest${month}">${numberFormat(interestValue)}</td>
-                    <td id="principal${month}">${numberFormat(principal)}</td>
-                    <td id="newBalance${month}">${numberFormat(newBalance)}</td>
+                    <td id="interest${month}">${numberFormat(monthsArray[month].interestValue)}</td>
+                    <td id="principal${month}">${numberFormat(monthsArray[month].principal)}</td>
+                    <td id="newBalance${month}">${numberFormat(monthsArray[month].newBalance)}</td>
                 </tr>
             `);
         }
 
-        function paymentTextChange(control, month) {
-            console.log(control, month);
+        function resetTable() {
+            monthsArray = [];
+            $("table#tblLoans").find("tr:gt(0)").remove();
+        }
+
+        var delay;
+        function paymentTextChange(control,monthIndex) {
+            let value = control.value;
+
+            clearTimeout(delay);
+            if(value.length > 0) {
+                delay = setTimeout(function () {
+                    let monthData = monthsArray[monthIndex];
+                    console.log(monthData, value, value.length);
+                }, 500);
+            }
         }
 
         function PMT({rate, term, loan}) {
