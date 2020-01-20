@@ -89,7 +89,7 @@
                     let newBalance = balance - principal;                    
 
                     appendToTable({
-                        month: i + 1,
+                        month: i,
                         balance, toPay, interestValue, principal, newBalance
                     });   
                     
@@ -101,15 +101,16 @@
         function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
             $("table#tblLoans").append(`
                 <tr id="rowMonth${month}">
-                    <td>${month}</td>
+                    <td>${month + 1}</td>
                     <td id="balance${month}">${numberFormat(balance)}</td>
                     <td id="payment${month}">${numberFormat(toPay)}</td>
                     <td>
                         <input 
                             type="text" 
                             class="form-control" 
-                            placeholder="${numberFormat(toPay)}" 
+                            placeholder="0.00" 
                             id="payment${month}"
+                            onKeyUp="paymentTextChange(this,${month})"
                         >
                     </td>
                     <td id="interest${month}">${numberFormat(interestValue)}</td>
@@ -117,6 +118,10 @@
                     <td id="newBalance${month}">${numberFormat(newBalance)}</td>
                 </tr>
             `);
+        }
+
+        function paymentTextChange(control, month) {
+            console.log(control, month);
         }
 
         function PMT({rate, term, loan}) {
