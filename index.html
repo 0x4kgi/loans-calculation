@@ -267,7 +267,7 @@
         }
 
         function updateAnnum(control) {
-            let value = stringToNumber(control.value) / 12;
+            let value = stringToNumber(control.value) * 12;
 
             $("input#txtInterestAnnum").val(numberFormat(value,3));
         }
