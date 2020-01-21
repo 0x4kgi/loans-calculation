@@ -84,8 +84,6 @@
             </table>
         </div>
     </div>
-    
-    
     <script src="scripts/vendors/js.js"></script>
     <script src="scripts/constants.js"></script>
     <script src="scripts/formulas.js"></script>
@@ -120,7 +118,6 @@
                     
                     balance = newBalance;                    
                 }
-                totalAnnumInterest();
             });
         });
 
@@ -267,15 +264,6 @@
             } else {
                 return str.replace(/\D+/g, "");
             }   
-        }
-
-        function totalAnnumInterest() {
-            var interestTotal = 0;
-            monthsArray.forEach((item) => {
-                interestTotal += item.interestValue;
-                //console.log(item, item.interestValue);
-            });
-            console.log(interestTotal);
         }
 
         function updateAnnum(control) {
