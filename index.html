@@ -62,8 +62,8 @@
     <br>
     <div class="container">
         <div class="row">
-            <table class="table table-bordered col-sm" id="tblLoans">
-                <tr>
+            <table class="table table-bordered table-sm col-sm">
+                <thead>
                     <th>Month #</th>
                     <th>Balance</th>
                     <th>Amount to pay</th>
@@ -71,7 +71,10 @@
                     <th>Interest</th>
                     <th>Principal</th>
                     <th>New Balance</th>
-                </tr>
+                </thead>
+                <tbody id="tblLoans">
+                    
+                </tbody>
             </table>
         </div>
     </div>
@@ -81,6 +84,7 @@
     <script>
         const DEFAULT_LOAN_AMOUNT = 10000;
         const DEFAULT_INTEREST = 2.5;
+        const DEFAULT_INTEREST_ANNUM = DEFAULT_INTEREST / 12;
         const DEFAULT_YEARS = 3;
         const DEFAULT_PAYMENT = 0;
 
@@ -104,7 +108,7 @@
                     let toPay = PMT({rate: interestRate, term: monthsCount - i, loan: loanAmount});
                     let payment = 0;
                     let interestValue = balance * (interestRate / 12);
-                    let principal = (payment - interestValue > 0) ? payment - interestValue : 0;
+                    let principal = 0;
                     let newBalance = balance - principal;                    
 
                     appendToTable({
@@ -116,29 +120,32 @@
                 }
                 totalAnnumInterest();
             });
-
-            //totalAnnumInterest();
         });
 
         function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
             monthsArray.push({month, balance, toPay, interestValue, principal, newBalance, payment: 0});
-            $("table#tblLoans").append(`
+            $("tbody#tblLoans").append(`
                 <tr id="rowMonth${month}">
-                    <td>${month + 1}</td>
-                    <td id="balance${month}">${numberFormat(monthsArray[month].balance)}</td>
-                    <td id="payment${month}">${numberFormat(toPay)}</td>
-                    <td>
+                    <td class="text-center">${month + 1}</td>
+                    <td class="text-right" 
+                        id="balance${month}">${numberFormat(monthsArray[month].balance)}</td>
+                    <td class="text-right" 
+                        id="payment${month}">${numberFormat(toPay)}</td>
+                    <td class="text-right" >
                         <input 
                             type="text" 
-                            class="form-control" 
+                            class="form-control text-right" 
                             placeholder="0.00" 
                             id="payment${month}"
                             onKeyUp="paymentTextChange(this,${month})"
                         >
                     </td>
-                    <td id="interest${month}">${numberFormat(monthsArray[month].interestValue)}</td>
-                    <td id="principal${month}">${numberFormat(monthsArray[month].principal)}</td>
-                    <td id="newBalance${month}">${numberFormat(monthsArray[month].newBalance)}</td>
+                    <td class="text-right" 
+                        id="interest${month}">${numberFormat(monthsArray[month].interestValue)}</td>
+                    <td class="text-right" 
+                        id="principal${month}">${numberFormat(monthsArray[month].principal)}</td>
+                    <td class="text-right" 
+                        id="newBalance${month}">${numberFormat(monthsArray[month].newBalance)}</td>
                 </tr>
             `);
             
@@ -146,7 +153,7 @@
 
         function resetTable() {
             monthsArray = [];
-            $("table#tblLoans").find("tr:gt(0)").remove();
+            $("tbody#tblLoans").html("");
         }
 
         var delay;
@@ -157,7 +164,9 @@
             
             monthData.payment = value || DEFAULT_PAYMENT;
             monthData.interestValue = monthData.balance * (interestRate / 12);
-            monthData.principal = monthData.payment - monthData.interestValue;
+            monthData.principal = $(`input#payment${monthIndex}`).val() 
+                ? monthData.payment - monthData.interestValue
+                : DEFAULT_PAYMENT;
             monthData.newBalance = monthData.balance - monthData.principal; 
 
             monthsArray[monthIndex] = monthData;
@@ -180,7 +189,9 @@
                 });
                 currentMonthData.payment = $(`input#payment${m}`).val() || DEFAULT_PAYMENT;
                 currentMonthData.interestValue = currentMonthData.balance * (interestRate / 12);
-                currentMonthData.principal = currentMonthData.payment - currentMonthData.interestValue;
+                currentMonthData.principal = $(`input#payment${m}`).val() 
+                    ? currentMonthData.payment - currentMonthData.interestValue
+                    : DEFAULT_PAYMENT;
                 currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
 
                 monthsArray[m] = currentMonthData;
