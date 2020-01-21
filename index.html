@@ -15,6 +15,9 @@
 
     <div class="container">
         <div class="row">
+
+        </div>
+        <div class="row">
             <div class="input-group col-sm">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Loan Amount:</span>
@@ -87,8 +90,12 @@
     <script src="scripts/vendors/js.js"></script>
     <script src="scripts/constants.js"></script>
     <script src="scripts/formulas.js"></script>
+    <script src="classes/main.js"></script>
     <script>
-        var monthsArray = [];
+        var loanProfiles = [];
+
+        var monthLoanVariables = [];
+        var monthArray = [];
 
         let loanAmount = DEFAULT_LOAN_AMOUNT;
         let interestRate = DEFAULT_INTEREST / 100;
@@ -122,13 +129,13 @@
         });
 
         function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
-            monthsArray.push({month, balance, toPay, interestValue, principal, newBalance, payment: 0});
+            monthArray.push({month, balance, toPay, interestValue, principal, newBalance, payment: 0});
             $("tbody#tblLoans").append(`
                 <tr id="rowMonth${month}">
                     <td class="text-center">${month + 1}</td>
                     <td class="text-right" 
                         id="balance${month}">
-                        ${numberFormat(monthsArray[month].balance)}
+                        ${numberFormat(monthArray[month].balance)}
                     </td>
                     <td class="text-right" 
                         id="payment${month}">
@@ -155,15 +162,15 @@
                     </td>
                     <td class="text-right" 
                         id="interest${month}">
-                        ${numberFormat(monthsArray[month].interestValue)}
+                        ${numberFormat(monthArray[month].interestValue)}
                     </td>
                     <td class="text-right" 
                         id="principal${month}">
-                        ${numberFormat(monthsArray[month].principal)}
+                        ${numberFormat(monthArray[month].principal)}
                     </td>
                     <td class="text-right" 
                         id="newBalance${month}">
-                        ${numberFormat(monthsArray[month].newBalance)}
+                        ${numberFormat(monthArray[month].newBalance)}
                     </td>
                 </tr>
             `);
@@ -171,14 +178,14 @@
         }
 
         function resetTable() {
-            monthsArray = [];
+            monthArray = [];
             $("tbody#tblLoans").html("");
         }
 
         function paymentTextChange(control,monthIndex) {
             let value = stringToNumber($(`input#payment${monthIndex}`).val());
 
-            let monthData = monthsArray[monthIndex];
+            let monthData = monthArray[monthIndex];
             
             monthData.payment = value || DEFAULT_PAYMENT;
             monthData.interestValue = interestValueCalculation(
@@ -191,15 +198,15 @@
             );
             monthData.newBalance = monthData.balance - monthData.principal; 
 
-            monthsArray[monthIndex] = monthData;
+            monthArray[monthIndex] = monthData;
             updateTableDisplay(monthIndex);
             updateTableData(monthIndex);
         }
 
         function updateTableData(monthIndex) {
             for (let m = monthIndex + 1; m <= monthsCount; m += 1) {
-                let previousMonthData = monthsArray[m - 1];
-                let currentMonthData = monthsArray[m];
+                let previousMonthData = monthArray[m - 1];
+                let currentMonthData = monthArray[m];
 
                 if (currentMonthData === undefined) break;
 
@@ -220,18 +227,18 @@
                 );
                 currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
 
-                monthsArray[m] = currentMonthData;
+                monthArray[m] = currentMonthData;
 
                 updateTableDisplay(m);
             }
         }
 
         function updateTableDisplay(monthIndex) {
-            $(`td#balance${monthIndex}`).html(numberFormat(monthsArray[monthIndex].balance));
-            $(`td#payment${monthIndex}`).html(numberFormat(monthsArray[monthIndex].toPay));
-            $(`td#interest${monthIndex}`).html(numberFormat(monthsArray[monthIndex].interestValue));
-            $(`td#principal${monthIndex}`).html(numberFormat(monthsArray[monthIndex].principal));
-            $(`td#newBalance${monthIndex}`).html(numberFormat(monthsArray[monthIndex].newBalance));
+            $(`td#balance${monthIndex}`).html(numberFormat(monthArray[monthIndex].balance));
+            $(`td#payment${monthIndex}`).html(numberFormat(monthArray[monthIndex].toPay));
+            $(`td#interest${monthIndex}`).html(numberFormat(monthArray[monthIndex].interestValue));
+            $(`td#principal${monthIndex}`).html(numberFormat(monthArray[monthIndex].principal));
+            $(`td#newBalance${monthIndex}`).html(numberFormat(monthArray[monthIndex].newBalance));
         }
 
         function numberFormat(number, places = 2) {
