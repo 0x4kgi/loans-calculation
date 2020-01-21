@@ -20,33 +20,39 @@
                     <span class="input-group-text">Loan Amount:</span>
                 </div>
                 <div class="input-group-prepend">
-                    <span class="input-group-text">$</span>
+                    <span class="input-group-text ">$</span>
                 </div>
-                <input type="text" class="form-control" placeholder="10000" id="txtLoans">
+                <input type="text" class="form-control text-right" placeholder="10000" id="txtLoans">
             </div>
             <div class="input-group col-sm">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Interest:</span>
                 </div>                
-                <input type="text" class="form-control" placeholder="2.5" id="txtInterest">
+                <input 
+                    type="text" 
+                    class="form-control text-right" 
+                    placeholder="2.5" 
+                    id="txtInterest"
+                    onkeyup="updateAnnum(this)"
+                >
                 <div class="input-group-append">
-                    <span class="input-group-text">% per month</span>
+                    <span class="input-group-text">% /month</span>
                 </div>
             </div>
             <div class="input-group col-sm">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Interest:</span>
                 </div>                
-                <input type="text" class="form-control" placeholder="2.5" id="txtInterestAnnum" readonly>
+                <input type="text" class="form-control text-right" placeholder="0.208" id="txtInterestAnnum" readonly>
                 <div class="input-group-append">
-                    <span class="input-group-text">% per annum</span>
+                    <span class="input-group-text">% /annum</span>
                 </div>
             </div>
             <div class="input-group col-sm">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Terms:</span>
                 </div>                
-                <input type="text" class="form-control" placeholder="3" id="txtYears">
+                <input type="text" class="form-control text-right" placeholder="3" id="txtYears">
                 <div class="input-group-append">
                     <span class="input-group-text">years</span>
                 </div>
@@ -81,13 +87,9 @@
     
     
     <script src="scripts/vendors/js.js"></script>
+    <script src="scripts/constants.js"></script>
+    <script src="scripts/formulas.js"></script>
     <script>
-        const DEFAULT_LOAN_AMOUNT = 10000;
-        const DEFAULT_INTEREST = 2.5;
-        const DEFAULT_INTEREST_ANNUM = DEFAULT_INTEREST / 12;
-        const DEFAULT_YEARS = 3;
-        const DEFAULT_PAYMENT = 0;
-
         var monthsArray = [];
 
         let loanAmount = DEFAULT_LOAN_AMOUNT;
@@ -107,7 +109,7 @@
                 for (let i = 0; i < monthsCount; i += 1) {
                     let toPay = PMT({rate: interestRate, term: monthsCount - i, loan: loanAmount});
                     let payment = 0;
-                    let interestValue = balance * (interestRate / 12);
+                    let interestValue = interestValueCalculation(balance, interestRate);
                     let principal = 0;
                     let newBalance = balance - principal;                    
 
@@ -128,24 +130,44 @@
                 <tr id="rowMonth${month}">
                     <td class="text-center">${month + 1}</td>
                     <td class="text-right" 
-                        id="balance${month}">${numberFormat(monthsArray[month].balance)}</td>
-                    <td class="text-right" 
-                        id="payment${month}">${numberFormat(toPay)}</td>
-                    <td class="text-right" >
-                        <input 
-                            type="text" 
-                            class="form-control text-right" 
-                            placeholder="0.00" 
-                            id="payment${month}"
-                            onKeyUp="paymentTextChange(this,${month})"
-                        >
+                        id="balance${month}">
+                        ${numberFormat(monthsArray[month].balance)}
                     </td>
                     <td class="text-right" 
-                        id="interest${month}">${numberFormat(monthsArray[month].interestValue)}</td>
+                        id="payment${month}">
+                        ${numberFormat(toPay)}
+                    </td>
+                    <td class="text-right">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <button 
+                                    class="btn btn-outline-secondary" 
+                                    type="button"
+                                    onClick="equalizePayments(${month});">
+                                    &gt;&gt;
+                                </button>    
+                            </div>
+                            <input 
+                                type="text" 
+                                class="form-control text-right" 
+                                placeholder="0.00" 
+                                id="payment${month}"
+                                onKeyUp="paymentTextChange(this,${month})"
+                            >
+                        </div>                        
+                    </td>
                     <td class="text-right" 
-                        id="principal${month}">${numberFormat(monthsArray[month].principal)}</td>
+                        id="interest${month}">
+                        ${numberFormat(monthsArray[month].interestValue)}
+                    </td>
                     <td class="text-right" 
-                        id="newBalance${month}">${numberFormat(monthsArray[month].newBalance)}</td>
+                        id="principal${month}">
+                        ${numberFormat(monthsArray[month].principal)}
+                    </td>
+                    <td class="text-right" 
+                        id="newBalance${month}">
+                        ${numberFormat(monthsArray[month].newBalance)}
+                    </td>
                 </tr>
             `);
             
@@ -156,17 +178,20 @@
             $("tbody#tblLoans").html("");
         }
 
-        var delay;
         function paymentTextChange(control,monthIndex) {
-            let value = control.value;
+            let value = stringToNumber($(`input#payment${monthIndex}`).val());
 
             let monthData = monthsArray[monthIndex];
             
             monthData.payment = value || DEFAULT_PAYMENT;
-            monthData.interestValue = monthData.balance * (interestRate / 12);
-            monthData.principal = $(`input#payment${monthIndex}`).val() 
-                ? monthData.payment - monthData.interestValue
-                : DEFAULT_PAYMENT;
+            monthData.interestValue = interestValueCalculation(
+                monthData.balance,
+                interestRate
+            );
+            monthData.principal = principalCalculation(
+                value, 
+                monthData.interestValue
+            );
             monthData.newBalance = monthData.balance - monthData.principal; 
 
             monthsArray[monthIndex] = monthData;
@@ -188,10 +213,14 @@
                     loan: currentMonthData.balance
                 });
                 currentMonthData.payment = $(`input#payment${m}`).val() || DEFAULT_PAYMENT;
-                currentMonthData.interestValue = currentMonthData.balance * (interestRate / 12);
-                currentMonthData.principal = $(`input#payment${m}`).val() 
-                    ? currentMonthData.payment - currentMonthData.interestValue
-                    : DEFAULT_PAYMENT;
+                currentMonthData.interestValue = interestValueCalculation(
+                    currentMonthData.balance,
+                    interestRate
+                );
+                currentMonthData.principal = principalCalculation(
+                    $(`input#payment${m}`).val(), 
+                    currentMonthData.interestValue
+                );
                 currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
 
                 monthsArray[m] = currentMonthData;
@@ -206,11 +235,6 @@
             $(`td#interest${monthIndex}`).html(numberFormat(monthsArray[monthIndex].interestValue));
             $(`td#principal${monthIndex}`).html(numberFormat(monthsArray[monthIndex].principal));
             $(`td#newBalance${monthIndex}`).html(numberFormat(monthsArray[monthIndex].newBalance));
-        }
-
-        function PMT({rate, term, loan}) {
-            rate = rate / 12;
-            return rate * (-loan) * Math.pow((1 + rate), term) / (1 - Math.pow((1 + rate), term))
         }
 
         function numberFormat(number, places = 2) {
@@ -228,13 +252,42 @@
             return num;
         }
 
+        function stringToNumber(data) {
+            str = data.toString();
+
+            if (str.indexOf(".") > -1) {
+                split = str.split(".");
+
+                if(split[1] === undefined) return 0;
+
+                split[0] = split[0].replace(/\D+/g, "");
+                split[1] = split[1].replace(/\D+/g, "");
+
+                return parseFloat(`${split[0]}.${split[1]}`);
+            } else {
+                return str.replace(/\D+/g, "");
+            }   
+        }
+
         function totalAnnumInterest() {
             var interestTotal = 0;
             monthsArray.forEach((item) => {
                 interestTotal += item.interestValue;
-                console.log(item, item.interestValue);
+                //console.log(item, item.interestValue);
             });
             console.log(interestTotal);
+        }
+
+        function updateAnnum(control) {
+            let value = stringToNumber(control.value) / 12;
+
+            $("input#txtInterestAnnum").val(numberFormat(value,3));
+        }
+        
+        function equalizePayments(monthIndex) {
+            let monthly = stringToNumber($(`td#payment${monthIndex}`).html());
+            $(`input#payment${monthIndex}`).val(monthly);
+            paymentTextChange($(`input#payment${monthIndex}`), monthIndex);
         }
     </script>    
 </body>
