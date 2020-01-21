@@ -26,23 +26,17 @@ class LoanFormulas {
     }
 }
 
-
-
-class LoanProfile extends LoanFormulas{
+class LoanFunctions extends LoanFormulas{
     constructor(data) {
         super(data);
-        
-        this.loanTable = [];
-
-        this.createEmptyList();
     }
 
     createEmptyList() {
         let balance = this.loanAmount;
         for (let i = 0; i < this.term; i += 1) {
             let toPay = this.pmt({
-                rate: this.interestRate, 
-                term: this.term - i, 
+                rate: this.interestRate,
+                term: this.term - i,
                 loan: this.loanAmount
             });
 
@@ -66,31 +60,16 @@ class LoanProfile extends LoanFormulas{
         }
     }
 
-    updateMonth(payment, month) {
-        let data = this.loanTable[month];
-        data.payment = payment;
-        data.interest = this.interestValueCalculation(
-            data.balance,
-            this.interestRate
-        );
-        data.principal = this.principalCalculation(
-            payment,
-            data.interest
-        );
-        data.newBalance = data.balance - data.principal;
-        this.updateTable();
-    }
-
     updateTable() {
         let data = this.loanTable;
         let balance = data[0].balance;
-        
-        for (let i = 0; i < this.term; i++) {   
+
+        for (let i = 0; i < this.term; i++) {
             let toPay = this.pmt({
                 rate: this.interestRate,
                 term: this.term - i,
                 loan: balance
-            });    
+            });
             let payment = data[i].payment;
             let interest = this.interestValueCalculation(
                 balance, this.interestRate
@@ -108,6 +87,31 @@ class LoanProfile extends LoanFormulas{
             }
             balance = newBalance;
         }
+    }
+}
+
+class LoanProfile extends LoanFunctions {
+    constructor(data) {
+        super(data);
+        
+        this.loanTable = [];
+
+        this.createEmptyList();
+    }    
+
+    setMonthData(payment, month) {
+        let data = this.loanTable[month];
+        data.payment = payment;
+        data.interest = this.interestValueCalculation(
+            data.balance,
+            this.interestRate
+        );
+        data.principal = this.principalCalculation(
+            payment,
+            data.interest
+        );
+        data.newBalance = data.balance - data.principal;
+        this.updateTable();
     }
 
     getMonthData(month) {

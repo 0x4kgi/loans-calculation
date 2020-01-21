@@ -15,7 +15,14 @@
 
     <div class="container">
         <div class="row">
-
+            <div class="form-group col-sm">
+                <label for="sel1">Select profile:</label>
+                <select class="form-control" id="loanProfile">
+                    <option value="profile1">profile1</option>
+                    <option value="profile2">profile2</option>
+                    <option value="profile3">profile3</option>
+                </select>
+            </div> 
         </div>
         <div class="row">
             <div class="input-group col-sm">
@@ -63,7 +70,7 @@
         </div>
         <br>
         <div class="row">
-            <div class="col-xm-12">
+            <div class="col-sm text-center">
                 <button type="button" class="btn btn-primary" id="btnUpdateTable">Set Values</button>
             </div>
         </div>        
@@ -82,60 +89,96 @@
                     <th>New Balance</th>
                 </thead>
                 <tbody id="tblLoans">
-                    
                 </tbody>
             </table>
         </div>
     </div>
     <script src="scripts/vendors/js.js"></script>
     <script src="scripts/constants.js"></script>
-    <script src="scripts/formulas.js"></script>
     <script src="classes/main.js"></script>
     <script>
-        var loanProfiles = [];
+        var profiles = {
+            profile1: null,
+            profile2: null,
+            profile3: null,
+        };
 
-        var monthLoanVariables = [];
-        var monthArray = [];
-
-        let loanAmount = DEFAULT_LOAN_AMOUNT;
-        let interestRate = DEFAULT_INTEREST / 100;
-        let monthsCount = DEFAULT_YEARS * 12;
+        var selectedProfile, loanAmount, interestRate, monthsCount;
 
         $(document).ready(function() {
             $("button#btnUpdateTable").on("click", function() {
-                loanAmount = $("input#txtLoans").val() || DEFAULT_LOAN_AMOUNT;
-                interestRate = ($("input#txtInterest").val() || DEFAULT_INTEREST) / 100;
-                monthsCount = ($("input#txtYears").val() || DEFAULT_YEARS) * 12;
+                selectedProfile = $("select#loanProfile").val();  
+                createLoanProfile(selectedProfile);              
+            });
 
-                resetTable();
+            $("select#loanProfile").on("change", function() {
+                $("input#txtLoans").val("");
+                $("input#txtInterest").val("");
+                $("input#txtYears").val("");
 
-                let balance = loanAmount;
-                
-                for (let i = 0; i < monthsCount; i += 1) {
-                    let toPay = PMT({rate: interestRate, term: monthsCount - i, loan: loanAmount});
-                    let payment = 0;
-                    let interestValue = interestValueCalculation(balance, interestRate);
-                    let principal = 0;
-                    let newBalance = balance - principal;                    
+                selectedProfile = $("select#loanProfile").val();
 
-                    appendToTable({
-                        month: i,
-                        balance, toPay, interestValue, principal, newBalance
-                    });   
-                    
-                    balance = newBalance;                    
+                let profileData = profiles[selectedProfile];
+
+                if(profileData !== null) {
+                    loadSelectedProfile(profileData);
+                } else {
+                    tableDisplay();
                 }
+
             });
         });
 
-        function appendToTable({month, balance, toPay, interestValue, principal, newBalance}) {
-            monthArray.push({month, balance, toPay, interestValue, principal, newBalance, payment: 0});
+        function createLoanProfile(selectedProfile) {
+            loanAmount = $("input#txtLoans").val() || DEFAULT_LOAN_AMOUNT;
+            interestRate = ($("input#txtInterest").val() || DEFAULT_INTEREST) / 100;
+            monthsCount = ($("input#txtYears").val() || DEFAULT_YEARS) * 12;
+
+            let profileData = new LoanProfile({
+                loanAmount: loanAmount,
+                interestRate: interestRate,
+                term: monthsCount,
+            });
+
+            profiles[selectedProfile] = profileData;
+            
+            tableDisplay(profileData);
+        }
+
+        function loadSelectedProfile(profileData) {
+            $("input#txtLoans").val(profileData.loanAmount);
+            $("input#txtInterest").val(profileData.interestRate * 100);
+            $("input#txtYears").val(profileData.term / 12);
+
+            tableDisplay(profileData);
+        }
+
+        function tableDisplay(profileData) {
+            $("tbody#tblLoans").html("");
+
+            if(profileData === undefined) return;
+
+            for (let i = 0; i < profileData.term; i += 1) { 
+                const row = profileData.getMonthData(i);           
+                appendToTable({
+                    month: i,
+                    balance: row.balance, 
+                    toPay: row.toPay, 
+                    interestValue: row.interest, 
+                    principal: row.principal, 
+                    newBalance: row.newBalance,
+                    payment: row.payment                    
+                });                 
+            }
+        }
+
+        function appendToTable({month, balance, toPay, interestValue, principal, newBalance, payment}) {
             $("tbody#tblLoans").append(`
                 <tr id="rowMonth${month}">
                     <td class="text-center">${month + 1}</td>
                     <td class="text-right" 
                         id="balance${month}">
-                        ${numberFormat(monthArray[month].balance)}
+                        ${numberFormat(balance)}
                     </td>
                     <td class="text-right" 
                         id="payment${month}">
@@ -156,89 +199,45 @@
                                 class="form-control text-right" 
                                 placeholder="0.00" 
                                 id="payment${month}"
+                                value="${payment}"
                                 onKeyUp="paymentTextChange(this,${month})"
                             >
                         </div>                        
                     </td>
                     <td class="text-right" 
                         id="interest${month}">
-                        ${numberFormat(monthArray[month].interestValue)}
+                        ${numberFormat(interestValue)}
                     </td>
                     <td class="text-right" 
                         id="principal${month}">
-                        ${numberFormat(monthArray[month].principal)}
+                        ${numberFormat(principal)}
                     </td>
                     <td class="text-right" 
                         id="newBalance${month}">
-                        ${numberFormat(monthArray[month].newBalance)}
+                        ${numberFormat(newBalance)}
                     </td>
                 </tr>
-            `);
-            
-        }
-
-        function resetTable() {
-            monthArray = [];
-            $("tbody#tblLoans").html("");
+            `);    
         }
 
         function paymentTextChange(control,monthIndex) {
             let value = stringToNumber($(`input#payment${monthIndex}`).val());
 
-            let monthData = monthArray[monthIndex];
-            
-            monthData.payment = value || DEFAULT_PAYMENT;
-            monthData.interestValue = interestValueCalculation(
-                monthData.balance,
-                interestRate
-            );
-            monthData.principal = principalCalculation(
-                value, 
-                monthData.interestValue
-            );
-            monthData.newBalance = monthData.balance - monthData.principal; 
+            profiles[selectedProfile].setMonthData(value, monthIndex);
 
-            monthArray[monthIndex] = monthData;
             updateTableDisplay(monthIndex);
-            updateTableData(monthIndex);
-        }
-
-        function updateTableData(monthIndex) {
-            for (let m = monthIndex + 1; m <= monthsCount; m += 1) {
-                let previousMonthData = monthArray[m - 1];
-                let currentMonthData = monthArray[m];
-
-                if (currentMonthData === undefined) break;
-
-                currentMonthData.balance = previousMonthData.newBalance;
-                currentMonthData.toPay = PMT({
-                    rate: interestRate,
-                    term: monthsCount - m,
-                    loan: currentMonthData.balance
-                });
-                currentMonthData.payment = $(`input#payment${m}`).val() || DEFAULT_PAYMENT;
-                currentMonthData.interestValue = interestValueCalculation(
-                    currentMonthData.balance,
-                    interestRate
-                );
-                currentMonthData.principal = principalCalculation(
-                    $(`input#payment${m}`).val(), 
-                    currentMonthData.interestValue
-                );
-                currentMonthData.newBalance = currentMonthData.balance - currentMonthData.principal; 
-
-                monthArray[m] = currentMonthData;
-
-                updateTableDisplay(m);
-            }
         }
 
         function updateTableDisplay(monthIndex) {
-            $(`td#balance${monthIndex}`).html(numberFormat(monthArray[monthIndex].balance));
-            $(`td#payment${monthIndex}`).html(numberFormat(monthArray[monthIndex].toPay));
-            $(`td#interest${monthIndex}`).html(numberFormat(monthArray[monthIndex].interestValue));
-            $(`td#principal${monthIndex}`).html(numberFormat(monthArray[monthIndex].principal));
-            $(`td#newBalance${monthIndex}`).html(numberFormat(monthArray[monthIndex].newBalance));
+            for (let i = monthIndex; i < monthsCount; i++) {
+                let data = profiles[selectedProfile].getMonthData(i);
+
+                $(`td#balance${i}`).html(numberFormat(data.balance));
+                $(`td#payment${i}`).html(numberFormat(data.toPay));
+                $(`td#interest${i}`).html(numberFormat(data.interest));
+                $(`td#principal${i}`).html(numberFormat(data.principal));
+                $(`td#newBalance${i}`).html(numberFormat(data.newBalance));                
+            }            
         }
 
         function numberFormat(number, places = 2) {
@@ -274,9 +273,9 @@
         }
 
         function updateAnnum(control) {
-            let value = stringToNumber(control.value) / 12;
+            let value = stringToNumber(control.value) * 12;
 
-            $("input#txtInterestAnnum").val(numberFormat(value,3));
+            $("input#txtInterestAnnum").val(numberFormat(value,2));
         }
         
         function equalizePayments(monthIndex) {
