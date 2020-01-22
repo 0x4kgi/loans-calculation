@@ -1,5 +1,9 @@
-import {DEFAULT} from "./constants.js";
-import {hello} from "./formulas.js";
+const DEFAULT = {
+    LOAN_AMOUNT: 10000,
+    INTEREST: 2.5,
+    YEARS: 3,
+    PAYMENT: 0,
+}
 
 var profiles = {
     profile1: null,
@@ -10,8 +14,6 @@ var profiles = {
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
 $(document).ready(function () {
-    hello();
-
     $("button#btnUpdateTable").on("click", function () {
         selectedProfile = $("select#loanProfile").val();
         createLoanProfile(selectedProfile);
@@ -126,14 +128,6 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
     `);
 }
 
-function paymentTextChange(control, monthIndex) {
-    let value = stringToNumber($(`input#payment${monthIndex}`).val());
-
-    profiles[selectedProfile].setMonthData(value, monthIndex);
-
-    updateTableDisplay(monthIndex);
-}
-
 function updateTableDisplay(monthIndex) {
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
@@ -149,7 +143,7 @@ function updateTableDisplay(monthIndex) {
 function numberFormat(number, places = 2) {
     let rounded = Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
 
-    num = parseFloat(rounded).toLocaleString(undefined, { maximumFractionDigits: places });
+    let num = parseFloat(rounded).toLocaleString(undefined, { maximumFractionDigits: places });
 
     let decimals = num.toString().split(".")[1];
     if (decimals === undefined) {
@@ -176,6 +170,14 @@ function stringToNumber(data) {
     } else {
         return str.replace(/\D+/g, "");
     }
+}
+
+function paymentTextChange(control, monthIndex) {
+    let value = stringToNumber($(`input#payment${monthIndex}`).val());
+
+    profiles[selectedProfile].setMonthData(value, monthIndex);
+
+    updateTableDisplay(monthIndex);
 }
 
 function updateAnnum(control) {
