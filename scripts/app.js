@@ -1,3 +1,9 @@
+function _(query) {
+    // If you don't want jQuery selector, use this
+    // slightly faster than jQuery, kinda
+    return document.querySelector(query);
+}
+
 const DEFAULT = {
     LOAN_AMOUNT: 10000,
     INTEREST: 2.5,
@@ -5,22 +11,27 @@ const DEFAULT = {
     PAYMENT: 0,
 }
 
-var profiles = {
-    default: null,
-};
+var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
-$(document).ready(function () {
+function controlsEventBind() {
     $("button#btnUpdateTable").on("click", function () {
+        let childCount = $("select#loanProfile")[0].childElementCount;
+
+        if (childCount < 1) {
+            alert("Create a profile first!");
+            return;
+        }
+
         selectedProfile = $("select#loanProfile").val();
         createLoanProfile(selectedProfile);
     });
 
     $("select#loanProfile").on("change", function () {
-        $("input#txtLoans").val("");
-        $("input#txtInterest").val("");
-        $("input#txtYears").val("");
+        _("input#txtLoans").value = "";
+        _("input#txtInterest").value = "";
+        _("input#txtYears").value = "";
 
         selectedProfile = $("select#loanProfile").val();
 
@@ -53,7 +64,7 @@ $(document).ready(function () {
 
         profiles[newName] = null;
     });
-});
+}
 
 function createLoanProfile(selectedProfile) {
     loanAmount = $("input#txtLoans").val() || DEFAULT.LOAN_AMOUNT;
@@ -80,7 +91,7 @@ function loadSelectedProfile(profileData) {
 }
 
 function tableDisplay(profileData) {
-    $("tbody#tblLoans").html("");
+    _("tbody#tblLoans").innerHTML = "";
 
     if (profileData === undefined) return;
 
@@ -150,11 +161,11 @@ function updateTableDisplay(monthIndex) {
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
-        $(`td#balance${i}`).html(numberFormat(data.balance));
-        $(`td#payment${i}`).html(numberFormat(data.toPay));
-        $(`td#interest${i}`).html(numberFormat(data.interest));
-        $(`td#principal${i}`).html(numberFormat(data.principal));
-        $(`td#newBalance${i}`).html(numberFormat(data.newBalance));
+        _(`td#balance${i}`)   .innerText = (numberFormat(data.balance));
+        _(`td#payment${i}`)   .innerText = (numberFormat(data.toPay));
+        _(`td#interest${i}`)  .innerText = (numberFormat(data.interest));
+        _(`td#principal${i}`) .innerText = (numberFormat(data.principal));
+        _(`td#newBalance${i}`).innerText = (numberFormat(data.newBalance));
     }
 }
 
@@ -191,7 +202,7 @@ function stringToNumber(data) {
 }
 
 function paymentTextChange(control, monthIndex) {
-    let value = stringToNumber($(`input#payment${monthIndex}`).val());
+    let value = stringToNumber(_(`input#payment${monthIndex}`).value);
 
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
@@ -201,11 +212,17 @@ function paymentTextChange(control, monthIndex) {
 function updateAnnum(control) {
     let value = stringToNumber(control.value) * 12;
 
-    $("input#txtInterestAnnum").val(numberFormat(value, 2));
+    _("input#txtInterestAnnum").value = numberFormat(value, 2);
+}
+
+function updateInterest(control) {
+    let value = stringToNumber(control.value) / 12;
+
+    _("input#txtInterest").value = numberFormat(value, 2);
 }
 
 function equalizePayments(monthIndex) {
-    let monthly = stringToNumber($(`td#payment${monthIndex}`).html());
-    $(`input#payment${monthIndex}`).val(monthly);
-    paymentTextChange($(`input#payment${monthIndex}`), monthIndex);
+    let monthly = stringToNumber(_(`td#payment${monthIndex}`).innerText);
+    _(`input#payment${monthIndex}`).value = monthly;
+    paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
 }
