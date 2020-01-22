@@ -1,3 +1,5 @@
+console.log("You are currently looking at the console. app.js is active.");
+
 function _(query) {
     // If you don't want jQuery selector, use this
     // slightly faster than jQuery, kinda
