@@ -14,3 +14,7 @@ function principalCalculation(payment, interestValue = 0) {
         ? payment - interestValue
         : DEFAULT_PAYMENT;
 }
+
+export function hello() {
+    alert("lmao");
+}
