@@ -6,9 +6,7 @@ const DEFAULT = {
 }
 
 var profiles = {
-    profile1: null,
-    profile2: null,
-    profile3: null,
+    default: null,
 };
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
@@ -28,12 +26,32 @@ $(document).ready(function () {
 
         let profileData = profiles[selectedProfile];
 
-        if (profileData !== null) {
+        if (profileData !== undefined && profileData !== null) {
             loadSelectedProfile(profileData);
         } else {
             tableDisplay();
         }
 
+    });
+
+    $("button#btnNewProfile").on("click", function () {
+        let newName = $("input#newProfile").val();
+
+        if (!newName) {
+            alert("Enter a name!");
+            return;
+        }
+
+        if (profiles[newName] !== undefined) {
+            alert(`Profile ${newName} already exists!`);
+            return;
+        }
+
+        $("select#loanProfile").append(`
+            <option value="${newName}">${newName}</option>
+        `).val(newName).trigger("change");
+
+        profiles[newName] = null;
     });
 });
 
@@ -107,7 +125,7 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
                         class="form-control text-right" 
                         placeholder="0.00" 
                         id="payment${month}"
-                        value="${payment}"
+                        value="${payment||""}"
                         onKeyUp="paymentTextChange(this,${month})"
                     >
                 </div>                        
