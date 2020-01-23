@@ -18,7 +18,7 @@ if ($reader->num_rows > 0) {
 foreach ($IDs as $Debtor_ID) {
     $Debtor_Data = new Debtor;
     $Debtor_Data->Retrieve($Debtor_ID);
-    array_push($data);
+    array_push($data, $Debtor_Data);
 }
 
 echo json_encode($data);

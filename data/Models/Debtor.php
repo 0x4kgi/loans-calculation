@@ -16,6 +16,7 @@ class Debtor
     public function Update($params)
     {
         $this->loan = new LoanData;
+        $this->loan->Build($params);
         $this->Save("update");
     }
     public function Retrieve($ID)
@@ -34,6 +35,32 @@ class Debtor
     }
     private function Save($mode)
     {
+        $json_loan = json_encode($this->loan);
+        if ($mode == "edit") {
+            try {
+                $sql = "UPDATE debtor SET `name` = ?, loans = ? WHERE `ID` = ?";
+                $Database = new MySqlConnection("loan_app", "root", "", "localhost");
+                $stmt = $Database->conn->prepare($sql);
+                $stmt->bind_param("sss", $this->name, $json_loan, $this->ID);
+               if (!$stmt->execute()) {
+                  throw new Exception("Failed to execute SQL query");
+               }
+               return;
+            } catch (Exception $ex) {
+               throw $ex;
+            }
+         }
+         try {
+            $sql = "INSERT INTO debtor (`ID`, `name`, loans) VALUES(?,?,?)";
+            $Database = new MySqlConnection("loan_app", "root", "", "localhost");
+            $stmt = $Database->conn->prepare($sql);
+            $stmt->bind_param("sss", $this->ID, $this->name, $json_loan);
+            if (!$stmt->execute()) {
+               throw new Exception("Failed to execute query");
+            }
+         } catch (Exception $ex) {
+                 throw $ex;
+         }
     }
     private function Build_Model($row)
     {
