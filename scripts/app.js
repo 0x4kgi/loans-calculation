@@ -185,6 +185,8 @@ function updateTableDisplay(monthIndex) {
 }
 
 function collectDataToSave() {
+    if(!isActive) return;
+
     let profileData = profiles[selectedProfile];
     let paymentValueArray = [];
 
