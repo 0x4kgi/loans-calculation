@@ -33,14 +33,14 @@ function serverCheck(data, status) {
         isActive = true;
         showToastNotification("Connected to the server!");
     } else if (status === "error") {
-        if (isActive == undefined || isActive == null) {
+        if (isActive == null) {
             createBlankProfile("Default Profile");
         }
         isActive = false;
 
         showToastNotification(`
-            You are currently offline, no data will be saved this session. 
-            Reconnecting in ${reconnectTime / 1000} seconds
+            Cannot connect to the server, no data will be saved this session. 
+            Retrying in ${reconnectTime / 1000} seconds
         `);
 
         reconnect = setTimeout(() => {
@@ -50,5 +50,6 @@ function serverCheck(data, status) {
         reconnectTime *= 2;
     } else {
         showToastNotification("Cannot identify if the server is alive or not, try reloading the page again");
+        isActive = false;
     }
 }
