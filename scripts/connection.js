@@ -16,19 +16,20 @@ function grabDataFromServer() {
 }
 
 function saveDataToServer(params) {
-    if(!isActive) return;
+    if (!isActive) return;
 
     $.ajax("data/update.php", {
         method: "POST",
         data: params,
-        success: function(data) {
+        success: function (data) {
             showToastNotification(`Profile "${selectedProfile}" has been saved!`);
         },
     });
 }
 
 function serverCheck(data, status) {
-    if (status === "success") {
+    console.log(data.status);
+    if (data.status === 200) {
         isActive = true;
         showToastNotification("Connected to the server!");
     } else if (status === "error") {
@@ -48,6 +49,6 @@ function serverCheck(data, status) {
 
         reconnectTime *= 2;
     } else {
-        showToastNotification("Cannot identify if the server is alive or not, try again");
+        showToastNotification("Cannot identify if the server is alive or not, try reloading the page again");
     }
 }
