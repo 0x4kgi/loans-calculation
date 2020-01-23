@@ -1,4 +1,4 @@
-var isActive;
+var isActive = false;
 var reconnectTime = 4000;
 
 function isServerActive(callback) {
