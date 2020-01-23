@@ -1,5 +1,7 @@
 <?php
 
-$xd = $_POST['things'];
-$xdd = $_POST['notThings'];
-echo $xd . " !!!! " . $xdd;
+$xd = $_POST['profile'];
+$xdd = $_POST['data'];
+
+var_dump($xd);
+var_dump($xdd);

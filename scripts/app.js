@@ -143,7 +143,8 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
                         placeholder="0.00" 
                         id="payment${month}"
                         value="${payment||""}"
-                        onKeyUp="paymentTextChange(this,${month})"
+                        name="payment[]"
+                        onchange="paymentTextChange(this,${month})"
                     >
                 </div>                        
             </td>
@@ -175,9 +176,17 @@ function updateTableDisplay(monthIndex) {
     }
 
     clearTimeout(saveDelay);
-    setTimeout(() => {
-        
-    }, 1000);
+    saveDelay = setTimeout(() => {
+        let paymentInputArray = document.getElementsByName("payment[]");
+        let paymentValueArray = [];
+
+        paymentInputArray.forEach((item) => {
+            paymentValueArray.push(item.value);
+        });
+        showToastNotification(`Saving ${selectedProfile}...`);
+
+        saveDataToServer(selectedProfile, paymentValueArray);
+    }, 2500);
 }
 
 function numberFormat(number, places = 2) {
@@ -238,7 +247,8 @@ function equalizePayments(monthIndex) {
     paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
 }
 
-function showToastNotification(message) {
+function showToastNotification(message, title = "Notification") {
+    $('strong#toast-title').html(title);
     $('div.toast-body').html(message);
     $('div.toast').toast('show');
 }
