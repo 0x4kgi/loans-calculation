@@ -101,6 +101,17 @@
             </table>
         </div>
     </div>
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2500" data-animation="true" style="position: absolute; top: 1rem; right: 1rem; z-index:99999">
+        <div class="toast-header">
+            <strong class="mr-auto">Connection</strong>
+            <small>now</small>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body"></div>
+        </div>
+    </div>
     <script src="scripts/vendors/jquery-3.4.1.min.js"></script>
     <script src="scripts/vendors/popper.min.js"></script>
     <script src="scripts/vendors/bootstrap.min.js"></script>
@@ -111,10 +122,8 @@
     <script>
         $(document).ready(function () {
             controlsEventBind();
-            isServerActive();
+            isServerActive(serverCheck);
         });
-
-        
     </script>
 </body>
 </html>

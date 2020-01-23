@@ -1,5 +1,3 @@
-console.log("You are currently looking at the console. app.js is active.");
-
 function _(query) {
     // If you don't want jQuery selector, use this
     // slightly faster than jQuery, kinda
@@ -16,6 +14,8 @@ const DEFAULT = {
 var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
+
+var saveDelay;
 
 function controlsEventBind() {
     $("button#btnUpdateTable").on("click", function () {
@@ -59,13 +59,17 @@ function controlsEventBind() {
             alert(`Profile ${newName} already exists!`);
             return;
         }
+        
+        createBlankProfile(newName);
+    });
+}
 
-        $("select#loanProfile").append(`
+function createBlankProfile(newName) {
+    $("select#loanProfile").append(`
             <option value="${newName}">${newName}</option>
         `).val(newName).trigger("change");
 
-        profiles[newName] = null;
-    });
+    profiles[newName] = null;
 }
 
 function createLoanProfile(selectedProfile) {
@@ -169,6 +173,11 @@ function updateTableDisplay(monthIndex) {
         _(`td#principal${i}`) .innerText = (numberFormat(data.principal));
         _(`td#newBalance${i}`).innerText = (numberFormat(data.newBalance));
     }
+
+    clearTimeout(saveDelay);
+    setTimeout(() => {
+        
+    }, 1000);
 }
 
 function numberFormat(number, places = 2) {
@@ -227,4 +236,9 @@ function equalizePayments(monthIndex) {
     let monthly = stringToNumber(_(`td#payment${monthIndex}`).innerText);
     _(`input#payment${monthIndex}`).value = monthly;
     paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
+}
+
+function showToastNotification(message) {
+    $('div.toast-body').html(message);
+    $('div.toast').toast('show');
 }
