@@ -1,6 +1,6 @@
 <?php
 
-class HTTPError
+class HTTPResponse
 {
     public $HTTPStatusCode;
     public $Message;
