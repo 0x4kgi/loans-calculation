@@ -2,6 +2,7 @@ class LoanFormulas {
     constructor(data) {
         this.loanAmount = data.loanAmount;
         this.interestRate = data.interestRate;
+        this.payments = data.payments;
         this.term = data.term;
     }
 
@@ -40,7 +41,9 @@ class LoanFunctions extends LoanFormulas{
                 loan: this.loanAmount
             });
 
-            let payment = 0;
+            let payment = (this.payments === undefined)
+                ? 0
+                : this.payments[i];
 
             let interest = this.interestValueCalculation(balance, this.interestRate);
 
@@ -58,6 +61,8 @@ class LoanFunctions extends LoanFormulas{
                 newBalance
             });
         }
+
+        if(this.payments !== undefined) this.updateTable();
     }
 
     updateTable() {

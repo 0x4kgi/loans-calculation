@@ -1,26 +1,43 @@
+function _(query) {
+    // If you don't want jQuery selector, use this
+    // slightly faster than jQuery, kinda
+    return document.querySelector(query);
+}
+
 const DEFAULT = {
     LOAN_AMOUNT: 10000,
     INTEREST: 2.5,
+    ANNUM: 30,
     YEARS: 3,
     PAYMENT: 0,
 }
 
-var profiles = {
-    default: null,
-};
+var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
-$(document).ready(function () {
+var saveDelay;
+
+function controlsEventBind() {
     $("button#btnUpdateTable").on("click", function () {
+        let childCount = $("select#loanProfile")[0].childElementCount;
+
+        if (childCount < 1) {
+            alert("Create a profile first!");
+            return;
+        }
+
         selectedProfile = $("select#loanProfile").val();
+
         createLoanProfile(selectedProfile);
+
+        collectDataToSave();
     });
 
     $("select#loanProfile").on("change", function () {
-        $("input#txtLoans").val("");
-        $("input#txtInterest").val("");
-        $("input#txtYears").val("");
+        _("input#txtLoans").value = "";
+        _("input#txtInterest").value = "";
+        _("input#txtYears").value = "";
 
         selectedProfile = $("select#loanProfile").val();
 
@@ -46,14 +63,18 @@ $(document).ready(function () {
             alert(`Profile ${newName} already exists!`);
             return;
         }
-
-        $("select#loanProfile").append(`
-            <option value="${newName}">${newName}</option>
-        `).val(newName).trigger("change");
-
-        profiles[newName] = null;
+        
+        createBlankProfile(newName);
     });
-});
+}
+
+function createBlankProfile(newName) {
+    $("select#loanProfile").append(`
+        <option value="${newName}">${newName}</option>
+    `).val(newName).trigger("change");
+
+    profiles[newName] = null;
+}
 
 function createLoanProfile(selectedProfile) {
     loanAmount = $("input#txtLoans").val() || DEFAULT.LOAN_AMOUNT;
@@ -74,13 +95,18 @@ function createLoanProfile(selectedProfile) {
 function loadSelectedProfile(profileData) {
     $("input#txtLoans").val(profileData.loanAmount);
     $("input#txtInterest").val(profileData.interestRate * 100);
+    $("input#txtInterestAnnum").val(profileData.interestRate * 100 * 12);
     $("input#txtYears").val(profileData.term / 12);
 
     tableDisplay(profileData);
 }
 
+function loadProfilesFromServer() {
+    
+}
+
 function tableDisplay(profileData) {
-    $("tbody#tblLoans").html("");
+    _("tbody#tblLoans").innerHTML = "";
 
     if (profileData === undefined) return;
 
@@ -126,7 +152,7 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
                         placeholder="0.00" 
                         id="payment${month}"
                         value="${payment||""}"
-                        onKeyUp="paymentTextChange(this,${month})"
+                        onchange="paymentTextChange(this,${month})"
                     >
                 </div>                        
             </td>
@@ -150,12 +176,32 @@ function updateTableDisplay(monthIndex) {
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
-        $(`td#balance${i}`).html(numberFormat(data.balance));
-        $(`td#payment${i}`).html(numberFormat(data.toPay));
-        $(`td#interest${i}`).html(numberFormat(data.interest));
-        $(`td#principal${i}`).html(numberFormat(data.principal));
-        $(`td#newBalance${i}`).html(numberFormat(data.newBalance));
-    }
+        _(`td#balance${i}`)   .innerText = (numberFormat(data.balance));
+        _(`td#payment${i}`)   .innerText = (numberFormat(data.toPay));
+        _(`td#interest${i}`)  .innerText = (numberFormat(data.interest));
+        _(`td#principal${i}`) .innerText = (numberFormat(data.principal));
+        _(`td#newBalance${i}`).innerText = (numberFormat(data.newBalance));
+    }    
+}
+
+function collectDataToSave() {
+    let profileData = profiles[selectedProfile];
+    let paymentValueArray = [];
+
+    profileData.loanTable.forEach((item) => {
+        paymentValueArray.push(item.payment);
+    });
+
+    showToastNotification(`Saving "${selectedProfile}..."`);
+
+    saveDataToServer({
+        method: "update",
+        profile: selectedProfile,
+        amount: profileData.loanAmount,
+        interest: profileData.interestRate * 100,
+        terms: profileData.term,
+        payment: paymentValueArray,
+    });
 }
 
 function numberFormat(number, places = 2) {
@@ -191,21 +237,36 @@ function stringToNumber(data) {
 }
 
 function paymentTextChange(control, monthIndex) {
-    let value = stringToNumber($(`input#payment${monthIndex}`).val());
+    let value = stringToNumber(_(`input#payment${monthIndex}`).value);
 
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
     updateTableDisplay(monthIndex);
+
+    clearTimeout(saveDelay);
+    saveDelay = setTimeout(() => collectDataToSave(), 2500);
 }
 
 function updateAnnum(control) {
-    let value = stringToNumber(control.value) * 12;
+    let value = (stringToNumber(control.value)||DEFAULT.INTEREST) * 12;
 
-    $("input#txtInterestAnnum").val(numberFormat(value, 2));
+    _("input#txtInterestAnnum").value = numberFormat(value, 2);
+}
+
+function updateInterest(control) {
+    let value = (stringToNumber(control.value)||DEFAULT.ANNUM) / 12;
+
+    _("input#txtInterest").value = numberFormat(value, 2);
 }
 
 function equalizePayments(monthIndex) {
-    let monthly = stringToNumber($(`td#payment${monthIndex}`).html());
-    $(`input#payment${monthIndex}`).val(monthly);
-    paymentTextChange($(`input#payment${monthIndex}`), monthIndex);
+    let monthly = stringToNumber(_(`td#payment${monthIndex}`).innerText);
+    _(`input#payment${monthIndex}`).value = monthly;
+    paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
+}
+
+function showToastNotification(message, title = "Notification") {
+    $('strong#toast-title').html(title);
+    $('div.toast-body').html(message);
+    $('div.toast').toast('show');
 }
