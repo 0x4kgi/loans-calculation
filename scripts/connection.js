@@ -10,21 +10,19 @@ function isServerActive(callback) {
 }
 
 function grabDataFromServer() {
-    
+    if (!isActive) return;
+
+    //$.ajax();
 }
 
-function saveDataToServer(profile, data) {
+function saveDataToServer(params) {
     if(!isActive) return;
 
     $.ajax("data/update.php", {
         method: "POST",
-        data: {
-            profile,
-            data
-        },
+        data: params,
         success: function(data) {
-            console.log(data);
-            showToastNotification("Saved!");
+            showToastNotification(`Profile "${selectedProfile}" has been saved!`);
         },
     });
 }
