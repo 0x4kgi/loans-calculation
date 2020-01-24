@@ -25,5 +25,5 @@ try {
     $error->HTTPStatusCode = 500;
     $error->Message = "Server encountered an exception while processing request.";
     header('HTTP/1.1 500 Internal Server Error');
-    json_encode($error);
+    echo json_encode($error);
 }
