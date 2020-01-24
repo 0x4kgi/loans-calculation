@@ -9,13 +9,11 @@ try {
     $sql = "SELECT `ID` FROM debtor";
     $reader = $Database->conn->query($sql);
     $data = [];
-
     if ($reader->num_rows > 0) {
         while ($result = $reader->fetch_assoc()) {
             array_push($IDs, $result['ID']);
         }
     }
-
     foreach ($IDs as $Debtor_ID) {
         $Debtor_Data = new Debtor;
         $Debtor_Data->Retrieve($Debtor_ID);

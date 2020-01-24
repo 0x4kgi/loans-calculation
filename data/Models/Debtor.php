@@ -15,6 +15,7 @@ class Debtor
     }
     public function Update($params)
     {
+        $this->name = $params['name'];
         $this->loan = new LoanData;
         $this->loan->Build($params);
         $this->Save("update");
