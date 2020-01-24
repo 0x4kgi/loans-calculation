@@ -28,7 +28,6 @@ function saveDataToServer(params) {
 }
 
 function serverCheck(data, status) {
-    console.log(data.status);
     if (data.status === 200) {
         isActive = true;
         showToastNotification("Connected to the server!");
@@ -43,13 +42,17 @@ function serverCheck(data, status) {
             Retrying in ${reconnectTime / 1000} seconds
         `);
 
-        reconnect = setTimeout(() => {
-            isServerActive(serverCheck);
-        }, reconnectTime);
-
-        reconnectTime *= 2;
+        tryToReconnect();
     } else {
-        showToastNotification("Cannot identify if the server is alive or not, try reloading the page again");
+        showToastNotification("Running in server-less mode, everything will reset upon reload.");
         isActive = false;
     }
+}
+
+function tryToReconnect() {
+    reconnect = setTimeout(() => {
+        isServerActive(serverCheck);
+    }, reconnectTime);
+
+    reconnectTime *= 2;
 }
