@@ -31,7 +31,7 @@ function controlsEventBind() {
 
         createLoanProfile(selectedProfile);
 
-        collectDataToSave();
+        collectDataToSave("add");
     });
 
     $("select#loanProfile").on("change", function () {
@@ -184,7 +184,7 @@ function updateTableDisplay(monthIndex) {
     }    
 }
 
-function collectDataToSave() {
+function collectDataToSave(method) {
     if(!isActive) return;
 
     let profileData = profiles[selectedProfile];
@@ -197,8 +197,9 @@ function collectDataToSave() {
     showToastNotification(`Saving "${selectedProfile}..."`);
 
     saveDataToServer({
-        method: "update",
-        profile: selectedProfile,
+        method: method,
+        name: selectedProfile,
+        ID: selectedProfile,
         amount: profileData.loanAmount,
         interest: profileData.interestRate * 100,
         terms: profileData.term,
@@ -246,7 +247,7 @@ function paymentTextChange(control, monthIndex) {
     updateTableDisplay(monthIndex);
 
     clearTimeout(saveDelay);
-    saveDelay = setTimeout(() => collectDataToSave(), 2500);
+    saveDelay = setTimeout(() => collectDataToSave("update"), 2500);
 }
 
 function updateAnnum(control) {

@@ -18,7 +18,7 @@ function grabDataFromServer() {
 function saveDataToServer(params) {
     if (!isActive) return;
 
-    $.ajax("data/update.php", {
+    $.ajax("data/Routes/StoreData.php", {
         method: "POST",
         data: params,
         success: function (data) {
