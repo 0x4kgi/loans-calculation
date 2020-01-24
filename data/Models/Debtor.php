@@ -11,10 +11,12 @@ class Debtor
         $this->ID =  hash("SHA3-512", date("ymdhisu"));
         $this->name = $params['name'];
         $this->loan = new LoanData;
+        $this->loan->Build($params);
         $this->Save("new");
     }
     public function Update($params)
     {
+        $this->name = $params['name'];
         $this->loan = new LoanData;
         $this->loan->Build($params);
         $this->Save("update");

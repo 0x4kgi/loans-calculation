@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . "/../Models/Debtor.php";
 require_once __DIR__ . "/../Models/HTTPResponse.php";
-if(!isset($_POST['method'])){
+header("Content-Type: application/JSON");
+if(!isset($_POST['method'])) {
     sendBadRequest();
 }
 else if ($_POST['method'] == "add") {
