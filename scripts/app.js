@@ -29,9 +29,13 @@ function controlsEventBind() {
 
         selectedProfile = $("select#loanProfile").val();
 
-        createLoanProfile(selectedProfile);
-
-        collectDataToSave("add");
+        if (profiles[selectedProfile] === undefined || profiles[selectedProfile] === null) {
+            createLoanProfile(selectedProfile);
+            collectDataToSave("add");
+        } else {
+            createLoanProfile(selectedProfile);
+            collectDataToSave("update");
+        }        
     });
 
     $("select#loanProfile").on("change", function () {
@@ -82,7 +86,6 @@ function createLoanProfile(selectedProfile) {
     monthsCount = ($("input#txtYears").val() || DEFAULT.YEARS) * 12;
 
     let profileData = new LoanProfile({
-        ID : "",
         loanAmount: loanAmount,
         interestRate: interestRate,
         term: monthsCount,
@@ -102,8 +105,24 @@ function loadSelectedProfile(profileData) {
     tableDisplay(profileData);
 }
 
-function loadProfilesFromServer() {
-    
+function loadProfilesFromServer(data) {
+    let profileArrayData = JSON.parse(data);
+
+    profileArrayData.forEach((item) => {
+        console.log(item);
+
+        createBlankProfile(item.name);
+
+        profiles[item.name] = new LoanProfile({
+            loanAmount: item.loan.Loan_Amount,
+            interestRate: item.loan.Interest_Rate,
+            payments: item.loan.PaymentLog,
+            term: item.loan.Terms
+        });
+    });
+
+    showToastNotification("Loaded data from server!");
+    $("select#loanProfile").trigger("change");
 }
 
 function tableDisplay(profileData) {
@@ -174,6 +193,7 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
 }
 
 function updateTableDisplay(monthIndex) {
+    console.log("updating table of ", selectedProfile)
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
@@ -201,7 +221,7 @@ function collectDataToSave(method) {
         method: method,
         name: selectedProfile,
         amount: profileData.loanAmount,
-        interest: profileData.interestRate * 100,
+        interest: profileData.interestRate,
         terms: profileData.term,
         payment: paymentValueArray,
     });
@@ -240,8 +260,9 @@ function stringToNumber(data) {
 }
 
 function paymentTextChange(control, monthIndex) {
+    console.log("sp", selectedProfile);
     let value = stringToNumber(_(`input#payment${monthIndex}`).value);
-
+    console.log("val", value);
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
     updateTableDisplay(monthIndex);

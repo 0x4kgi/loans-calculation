@@ -1,17 +1,18 @@
 <?php
 require_once __DIR__ . "/../Models/Debtor.php";
 require_once __DIR__ . "/../Utilities/MySqlConnection.php";
+require_once __DIR__ . "/../Models/HTTPResponse.php";
 
 header("Content-Type: application/JSON");
 try {
     $IDs = [];
     $Database = new MySqlConnection("loan_app", "root", "", "localhost");
-    $sql = "SELECT `ID` FROM debtor";
+    $sql = "SELECT `name`, `loans` FROM debtor";
     $reader = $Database->conn->query($sql);
     $data = [];
     if ($reader->num_rows > 0) {
         while ($result = $reader->fetch_assoc()) {
-            array_push($IDs, $result['ID']);
+            array_push($IDs, $result['name']);
         }
     }
     foreach ($IDs as $Debtor_ID) {

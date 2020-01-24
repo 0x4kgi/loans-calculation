@@ -1,5 +1,6 @@
 var isActive = null;
 var reconnectTime = 4000;
+var profileDataFromServer = [];
 
 function isServerActive(callback) {
     $.ajax("data/check.php", {
@@ -11,8 +12,12 @@ function isServerActive(callback) {
 
 function grabDataFromServer() {
     if (!isActive) return;
-
-    //$.ajax();
+    $.ajax("data/Routes/FetchData.php", {
+        success: (data) => loadProfilesFromServer(data),
+        error: () => {
+            showToastNotification("Something went wrong")
+        }
+    });
 }
 
 function saveDataToServer(params) {
@@ -21,16 +26,21 @@ function saveDataToServer(params) {
     $.ajax("data/Routes/StoreData.php", {
         method: "POST",
         data: params,
-        success: function (data) {
+        success: (data) => {
             showToastNotification(`Profile "${selectedProfile}" has been saved!`);
         },
+        error: (data) => {
+            console.log(data);
+            showToastNotification(`Could not save "${selectedProfile}". ${data.responseText}`);
+        }
     });
 }
 
 function serverCheck(data, status) {
     if (data.status === 200) {
         isActive = true;
-        showToastNotification("Connected to the server!");
+        showToastNotification("Retrieving data from server...");
+        grabDataFromServer();
     } else if (status === "error") {
         if (isActive == null) {
             createBlankProfile("Default Profile");

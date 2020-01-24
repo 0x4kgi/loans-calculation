@@ -15,12 +15,11 @@ else if ($_POST['method'] == "add") {
         echo json_encode($response);
     }
     catch(Exception $ex){
-        sendInternalServerError();
+        sendInternalServerError($ex);
     }
 } else if ($_POST['method'] == "update") {
     try{
         $new_debtor= new Debtor;
-        $new_debtor->ID = $_POST['ID'];
         $new_debtor->Update($_POST);
         $response = new HTTPResponse;
         $response->HTTPStatusCode = 200;
@@ -28,7 +27,7 @@ else if ($_POST['method'] == "add") {
         echo json_encode($response);
     }
     catch(Exception $ex){
-        sendInternalServerError();    
+        sendInternalServerError($ex);    
     }
 } else {
     sendBadRequest();
@@ -42,10 +41,10 @@ function sendBadRequest(){
     echo json_encode($error);
 }
 
-function sendInternalServerError(){
+function sendInternalServerError($message){
     $error = new HTTPResponse;
     $error->HTTPStatusCode = 500;
-    $error->Message = "Server encountered an exception while processing request.";
+    $error->Message = "Server encountered an exception while processing request. $message";
     header('HTTP/1.1 500 Internal Server Error');
-    echo json_encode($error);
+    echo $error->Message;
 }
