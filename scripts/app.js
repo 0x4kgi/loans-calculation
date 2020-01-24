@@ -82,6 +82,7 @@ function createLoanProfile(selectedProfile) {
     monthsCount = ($("input#txtYears").val() || DEFAULT.YEARS) * 12;
 
     let profileData = new LoanProfile({
+        ID : "",
         loanAmount: loanAmount,
         interestRate: interestRate,
         term: monthsCount,
@@ -199,6 +200,7 @@ function collectDataToSave() {
     saveDataToServer({
         method: "update",
         profile: selectedProfile,
+        ID : profileData.ID,
         amount: profileData.loanAmount,
         interest: profileData.interestRate * 100,
         terms: profileData.term,

@@ -98,9 +98,8 @@ class LoanFunctions extends LoanFormulas{
 class LoanProfile extends LoanFunctions {
     constructor(data) {
         super(data);
-        
+        this.ID = data.ID;
         this.loanTable = [];
-
         this.createEmptyList();
     }    
 
