@@ -8,11 +8,6 @@ class LoanFormulas {
 
     pmt({ rate, term, loan }) {
         rate = rate / 100;
-        // return (
-        //     (rate * -loan * Math.pow(1 + rate, term)) /
-        //     (1 - Math.pow(1 + rate, term))
-        // );
-
         return (rate * loan) / (1 - Math.pow(1 + rate, -term));
     }
 
@@ -41,7 +36,10 @@ class LoanFunctions extends LoanFormulas {
                 loan: this.loanAmount,
             });
 
-            let payment = this.payments === undefined ? 0 : this.payments[i];
+            let payment =
+                this.payments === undefined || this.payments !== undefined
+                    ? 0
+                    : this.payments[i];
 
             let interest = this.interestValueCalculation(
                 balance,
@@ -63,7 +61,8 @@ class LoanFunctions extends LoanFormulas {
             });
         }
 
-        if (this.payments !== undefined) this.updateTable();
+        if (this.payments !== undefined || this.payments !== null)
+            this.updateTable();
     }
 
     updateTable() {
