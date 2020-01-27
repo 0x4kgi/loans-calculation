@@ -8,10 +8,10 @@ class LoanFormulas {
 
     pmt({ rate, term, loan }) {
         rate = rate / 12;
-        return (
-            (rate * -loan * Math.pow(1 + rate, term)) /
-            (1 - Math.pow(1 + rate, term))
-        );
+        return rate 
+            * (-loan) 
+            * Math.pow((1 + rate), term) 
+            / (1 - Math.pow((1 + rate), term));
     }
 
     interestValueCalculation(balance, interestRate) {
@@ -21,11 +21,13 @@ class LoanFormulas {
     principalCalculation(payment, interestValue = 0) {
         if (payment == 0) return 0;
 
-        return payment ? payment - interestValue : 0;
+        return payment
+            ? payment - interestValue
+            : 0;
     }
 }
 
-class LoanFunctions extends LoanFormulas {
+class LoanFunctions extends LoanFormulas{
     constructor(data) {
         super(data);
     }
@@ -36,15 +38,14 @@ class LoanFunctions extends LoanFormulas {
             let toPay = this.pmt({
                 rate: this.interestRate,
                 term: this.term - i,
-                loan: this.loanAmount,
+                loan: this.loanAmount
             });
 
-            let payment = this.payments === undefined ? 0 : this.payments[i];
+            let payment = (this.payments === undefined)
+                ? 0
+                : this.payments[i];
 
-            let interest = this.interestValueCalculation(
-                balance,
-                this.interestRate
-            );
+            let interest = this.interestValueCalculation(balance, this.interestRate);
 
             let principal = 0;
 
@@ -57,14 +58,15 @@ class LoanFunctions extends LoanFormulas {
                 payment,
                 interest,
                 principal,
-                newBalance,
+                newBalance
             });
         }
 
-        if (this.payments !== undefined) this.updateTable();
+        if(this.payments !== undefined) this.updateTable();
     }
 
     updateTable() {
+        
         let data = this.loanTable;
         let balance = data[0].balance;
 
@@ -72,12 +74,11 @@ class LoanFunctions extends LoanFormulas {
             let toPay = this.pmt({
                 rate: this.interestRate,
                 term: this.term - i,
-                loan: balance,
+                loan: balance
             });
             let payment = data[i].payment;
             let interest = this.interestValueCalculation(
-                balance,
-                this.interestRate
+                balance, this.interestRate
             );
             let principal = this.principalCalculation(payment, interest);
             let newBalance = balance - principal;
@@ -88,8 +89,8 @@ class LoanFunctions extends LoanFormulas {
                 payment,
                 interest,
                 principal,
-                newBalance,
-            };
+                newBalance
+            }
             balance = newBalance;
         }
     }
@@ -101,7 +102,7 @@ class LoanProfile extends LoanFunctions {
         this.ID = data.ID;
         this.loanTable = [];
         this.createEmptyList();
-    }
+    }    
 
     setMonthData(payment, month) {
         let data = this.loanTable[month];
@@ -110,45 +111,16 @@ class LoanProfile extends LoanFunctions {
             data.balance,
             this.interestRate
         );
-        data.principal = this.principalCalculation(payment, data.interest);
+        data.principal = this.principalCalculation(
+            payment,
+            data.interest
+        );
         data.newBalance = data.balance - data.principal;
         this.updateTable();
     }
 
     getMonthData(month) {
+        
         return this.loanTable[month];
-    }
-
-    getTotalInterest() {
-        let data = this.loanTable;
-        let totalInterest = 0;
-
-        data.forEach(item => {
-            totalInterest += item.interest;
-        });
-
-        return totalInterest;
-    }
-
-    getTotalPrincipal() {
-        let data = this.loanTable;
-        let totalPrincipal = 0;
-
-        data.forEach(item => {
-            totalPrincipal += item.principal;
-        });
-
-        return totalPrincipal;
-    }
-
-    getTotalPayment() {
-        let data = this.loanTable;
-        let totalPayment = 0;
-
-        data.forEach(item => {
-            totalPayment += item.payment;
-        });
-
-        return totalPayment;
     }
 }

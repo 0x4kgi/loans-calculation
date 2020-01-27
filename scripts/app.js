@@ -179,7 +179,6 @@ function paymentTextChange(control, monthIndex) {
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
     updateTableDisplay(monthIndex);
-    updateLoanInformation();
 
     let currentProfile = selectedProfile;
 

@@ -25,10 +25,10 @@ function saveDataToServer(params) {
     $.ajax("data/Routes/StoreData.php", {
         method: "POST",
         data: params,
-        success: () => {
+        success: data => {
             showToastNotification(`Profile "${params.name}" has been saved!`);
         },
-        error: (data) => {
+        error: data => {
             showToastNotification(
                 `Could not save "${params.name}". ${data.responseText}`
             );
