@@ -96,6 +96,7 @@ function createLoanProfile(selectedProfile) {
     profiles[selectedProfile] = profileData;
 
     tableDisplay(profileData);
+    
 }
 
 function loadSelectedProfile(profileData) {
@@ -147,6 +148,8 @@ function tableDisplay(profileData) {
             payment: row.payment,
         });
     }
+
+    updateLoanInformation();
 }
 
 function collectDataToSave(method, profile) {

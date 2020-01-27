@@ -147,5 +147,7 @@ function updateLoanInformation() {
     let principal = profiles[selectedProfile].getTotalPrincipal();
     let payment = profiles[selectedProfile].getTotalPayment();
 
-    
+    _("input#txtTotalInterest").value = numberFormat(interest);
+    _("input#txtTotalPayment").value = numberFormat(payment);
+    _("input#txtTotalPrincipal").value = numberFormat(principal);
 }
