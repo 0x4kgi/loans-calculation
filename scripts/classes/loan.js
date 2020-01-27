@@ -7,15 +7,17 @@ class LoanFormulas {
     }
 
     pmt({ rate, term, loan }) {
-        rate = rate / 12;
-        return (
-            (rate * -loan * Math.pow(1 + rate, term)) /
-            (1 - Math.pow(1 + rate, term))
-        );
+        //rate = rate / 12;
+        // return (
+        //     (rate * -loan * Math.pow(1 + rate, term)) /
+        //     (1 - Math.pow(1 + rate, term))
+        // );
+
+        return (rate * loan) / (1 - Math.pow(1 + rate, -term));
     }
 
     interestValueCalculation(balance, interestRate) {
-        return balance * (interestRate / 12);
+        return balance * (interestRate);
     }
 
     principalCalculation(payment, interestValue = 0) {
