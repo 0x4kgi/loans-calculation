@@ -35,10 +35,18 @@ function showToastNotification(message, title = "Notification") {
 
     toastClear = setTimeout(() => {
         $("div#toasts-container").html("");
-    }, 3000)
+    }, 3000);
 }
 
-function appendToTable({ month, balance, toPay, interestValue, principal, newBalance, payment }) {
+function appendToTable({
+    month,
+    balance,
+    toPay,
+    interestValue,
+    principal,
+    newBalance,
+    payment,
+}) {
     $("tbody#tblLoans").append(`
         <tr id="rowMonth${month}">
             <td class="text-center">${month + 1}</td>
@@ -87,22 +95,25 @@ function appendToTable({ month, balance, toPay, interestValue, principal, newBal
 }
 
 function updateTableDisplay(monthIndex) {
-    console.log("updating table of ", selectedProfile)
+    console.log("updating table of ", selectedProfile);
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
-        _(`td#balance${i}`).innerText = (numberFormat(data.balance));
-        _(`td#payment${i}`).innerText = (numberFormat(data.toPay));
-        _(`td#interest${i}`).innerText = (numberFormat(data.interest));
-        _(`td#principal${i}`).innerText = (numberFormat(data.principal));
-        _(`td#newBalance${i}`).innerText = (numberFormat(data.newBalance));
+        _(`td#balance${i}`).innerText = numberFormat(data.balance);
+        _(`td#payment${i}`).innerText = numberFormat(data.toPay);
+        _(`td#interest${i}`).innerText = numberFormat(data.interest);
+        _(`td#principal${i}`).innerText = numberFormat(data.principal);
+        _(`td#newBalance${i}`).innerText = numberFormat(data.newBalance);
     }
 }
 
 function numberFormat(number, places = 2) {
-    let rounded = Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
+    let rounded =
+        Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
 
-    let num = parseFloat(rounded).toLocaleString(undefined, { maximumFractionDigits: places });
+    let num = parseFloat(rounded).toLocaleString(undefined, {
+        maximumFractionDigits: places,
+    });
 
     let decimals = num.toString().split(".")[1];
     if (decimals === undefined) {

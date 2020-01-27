@@ -10,7 +10,7 @@ const DEFAULT = {
     ANNUM: 30,
     YEARS: 3,
     PAYMENT: 0,
-}
+};
 
 var profiles = {};
 
@@ -19,7 +19,7 @@ var selectedProfile, loanAmount, interestRate, monthsCount;
 var saveDelay = {};
 
 function controlsEventBind() {
-    $("button#btnUpdateTable").on("click", function () {
+    $("button#btnUpdateTable").on("click", function() {
         let childCount = $("select#loanProfile")[0].childElementCount;
 
         if (childCount < 1) {
@@ -40,7 +40,7 @@ function controlsEventBind() {
         }
     });
 
-    $("select#loanProfile").on("change", function () {
+    $("select#loanProfile").on("change", function() {
         _("input#txtLoans").value = "";
         _("input#txtInterest").value = "";
         _("input#txtYears").value = "";
@@ -54,10 +54,9 @@ function controlsEventBind() {
         } else {
             tableDisplay();
         }
-
     });
 
-    $("button#btnNewProfile").on("click", function () {
+    $("button#btnNewProfile").on("click", function() {
         let newName = $("input#newProfile").val();
 
         if (!newName) {
@@ -75,9 +74,10 @@ function controlsEventBind() {
 }
 
 function createBlankProfile(newName) {
-    $("select#loanProfile").append(`
-        <option value="${newName}">${newName}</option>
-    `).val(newName).trigger("change");
+    $("select#loanProfile")
+        .append(`<option value="${newName}">${newName}</option>`)
+        .val(newName)
+        .trigger("change");
 
     profiles[newName] = null;
 }
@@ -94,7 +94,6 @@ function createLoanProfile(selectedProfile) {
     });
 
     profiles[selectedProfile] = profileData;
-    
 
     tableDisplay(profileData);
 }
@@ -116,16 +115,14 @@ function loadSelectedProfile(profileData) {
 function loadProfilesFromServer(data) {
     let profileArrayData = JSON.parse(data);
 
-    profileArrayData.forEach((item) => {
-
-
+    profileArrayData.forEach(item => {
         createBlankProfile(item.name);
 
         profiles[item.name] = new LoanProfile({
             loanAmount: item.loan.Loan_Amount,
             interestRate: item.loan.Interest_Rate,
             payments: item.loan.PaymentLog,
-            term: item.loan.Terms
+            term: item.loan.Terms,
         });
     });
 
@@ -147,19 +144,19 @@ function tableDisplay(profileData) {
             interestValue: row.interest,
             principal: row.principal,
             newBalance: row.newBalance,
-            payment: row.payment
+            payment: row.payment,
         });
     }
 }
 
-function collectDataToSave(method, profile) {    
+function collectDataToSave(method, profile) {
     if (!isActive) return;
-    
+
     let profileData = profiles[profile];
     let paymentValueArray = [];
 
-    if (method == "update") { 
-        profileData.loanTable.forEach((item) => {
+    if (method == "update") {
+        profileData.loanTable.forEach(item => {
             paymentValueArray.push(item.payment);
         });
     }
@@ -184,6 +181,7 @@ function paymentTextChange(control, monthIndex) {
     updateTableDisplay(monthIndex);
 
     let currentProfile = selectedProfile;
+
     clearTimeout(saveDelay[currentProfile]);
     saveDelay[currentProfile] = setTimeout(
         () => collectDataToSave("update", currentProfile),
