@@ -146,7 +146,7 @@ class LoanProfile extends LoanFunctions {
         let totalPayment = 0;
 
         data.forEach(item => {
-            totalPayment += item.payment;
+            totalPayment += parseFloat(item.payment);
         });
 
         return totalPayment;
