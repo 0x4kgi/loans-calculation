@@ -84,7 +84,7 @@ function createBlankProfile(newName) {
 
 function createLoanProfile(selectedProfile) {
     loanAmount = $("input#txtLoans").val() || DEFAULT.LOAN_AMOUNT;
-    interestRate = ($("input#txtInterest").val() || DEFAULT.INTEREST) / 100;
+    interestRate = ($("input#txtInterest").val() || DEFAULT.INTEREST);
     monthsCount = ($("input#txtYears").val() || DEFAULT.YEARS) * 12;
 
     let profileData = new LoanProfile({
@@ -101,13 +101,13 @@ function createLoanProfile(selectedProfile) {
 
 function loadSelectedProfile(profileData) {
     $("input#txtLoans").val(profileData.loanAmount);
-    $("input#txtInterest").val(profileData.interestRate * 100);
-    $("input#txtInterestAnnum").val(profileData.interestRate * 100 * 12);
+    $("input#txtInterest").val(profileData.interestRate);
+    $("input#txtInterestAnnum").val(profileData.interestRate * 12);
     $("input#txtYears").val(profileData.term / 12);
 
     //var selectedProfile, loanAmount, interestRate, monthsCount;
     loanAmount = profileData.loanAmount;
-    interestRate = profileData.interestRate * 100;
+    interestRate = profileData.interestRate;
     monthsCount = profileData.term;
 
     tableDisplay(profileData);
