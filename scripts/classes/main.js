@@ -66,7 +66,7 @@ class LoanFunctions extends LoanFormulas{
     }
 
     updateTable() {
-        console.log("updateTableCalled");
+        
         let data = this.loanTable;
         let balance = data[0].balance;
 
@@ -120,7 +120,7 @@ class LoanProfile extends LoanFunctions {
     }
 
     getMonthData(month) {
-        console.log("data",this.loanTable[month]);
+        
         return this.loanTable[month];
     }
 }

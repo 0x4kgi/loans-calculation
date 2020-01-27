@@ -27,11 +27,10 @@ function saveDataToServer(params) {
         method: "POST",
         data: params,
         success: (data) => {
-            showToastNotification(`Profile "${selectedProfile}" has been saved!`);
+            showToastNotification(`Profile "${params.name}" has been saved!`);
         },
-        error: (data) => {
-            console.log(data);
-            showToastNotification(`Could not save "${selectedProfile}". ${data.responseText}`);
+        error: (data) => {            
+            showToastNotification(`Could not save "${params.name}". ${data.responseText}`);
         }
     });
 }

@@ -16,7 +16,7 @@ var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
-var saveDelay;
+var saveDelay = {};
 
 function controlsEventBind() {
     $("button#btnUpdateTable").on("click", function () {
@@ -29,13 +29,15 @@ function controlsEventBind() {
 
         selectedProfile = $("select#loanProfile").val();
 
-        if (profiles[selectedProfile] === undefined || profiles[selectedProfile] === null) {
+        let profileData = profiles[selectedProfile];
+
+        if (profileData === undefined || profileData === null) {
             createLoanProfile(selectedProfile);
-            collectDataToSave("add");
+            collectDataToSave("add", selectedProfile);
         } else {
             createLoanProfile(selectedProfile);
-            collectDataToSave("update");
-        }        
+            collectDataToSave("update", selectedProfile);
+        }
     });
 
     $("select#loanProfile").on("change", function () {
@@ -67,7 +69,7 @@ function controlsEventBind() {
             alert(`Profile ${newName} already exists!`);
             return;
         }
-        
+
         createBlankProfile(newName);
     });
 }
@@ -92,6 +94,7 @@ function createLoanProfile(selectedProfile) {
     });
 
     profiles[selectedProfile] = profileData;
+    
 
     tableDisplay(profileData);
 }
@@ -102,6 +105,11 @@ function loadSelectedProfile(profileData) {
     $("input#txtInterestAnnum").val(profileData.interestRate * 100 * 12);
     $("input#txtYears").val(profileData.term / 12);
 
+    //var selectedProfile, loanAmount, interestRate, monthsCount;
+    loanAmount = profileData.loanAmount;
+    interestRate = profileData.interestRate * 100;
+    monthsCount = profileData.term;
+
     tableDisplay(profileData);
 }
 
@@ -109,7 +117,7 @@ function loadProfilesFromServer(data) {
     let profileArrayData = JSON.parse(data);
 
     profileArrayData.forEach((item) => {
-        console.log(item);
+
 
         createBlankProfile(item.name);
 
@@ -144,82 +152,23 @@ function tableDisplay(profileData) {
     }
 }
 
-function appendToTable({ month, balance, toPay, interestValue, principal, newBalance, payment }) {
-    $("tbody#tblLoans").append(`
-        <tr id="rowMonth${month}">
-            <td class="text-center">${month + 1}</td>
-            <td class="text-right" 
-                id="balance${month}">
-                ${numberFormat(balance)}
-            </td>
-            <td class="text-right" 
-                id="payment${month}">
-                ${numberFormat(toPay)}
-            </td>
-            <td class="text-right">
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <button 
-                            class="btn btn-outline-secondary" 
-                            type="button"
-                            onClick="equalizePayments(${month});">
-                            &gt;&gt;
-                        </button>    
-                    </div>
-                    <input 
-                        type="text" 
-                        class="form-control text-right" 
-                        placeholder="0.00" 
-                        id="payment${month}"
-                        value="${payment||""}"
-                        onchange="paymentTextChange(this,${month})"
-                    >
-                </div>                        
-            </td>
-            <td class="text-right" 
-                id="interest${month}">
-                ${numberFormat(interestValue)}
-            </td>
-            <td class="text-right" 
-                id="principal${month}">
-                ${numberFormat(principal)}
-            </td>
-            <td class="text-right" 
-                id="newBalance${month}">
-                ${numberFormat(newBalance)}
-            </td>
-        </tr>
-    `);
-}
-
-function updateTableDisplay(monthIndex) {
-    console.log("updating table of ", selectedProfile)
-    for (let i = monthIndex; i < monthsCount; i++) {
-        let data = profiles[selectedProfile].getMonthData(i);
-
-        _(`td#balance${i}`)   .innerText = (numberFormat(data.balance));
-        _(`td#payment${i}`)   .innerText = (numberFormat(data.toPay));
-        _(`td#interest${i}`)  .innerText = (numberFormat(data.interest));
-        _(`td#principal${i}`) .innerText = (numberFormat(data.principal));
-        _(`td#newBalance${i}`).innerText = (numberFormat(data.newBalance));
-    }    
-}
-
-function collectDataToSave(method) {
-    if(!isActive) return;
-
-    let profileData = profiles[selectedProfile];
+function collectDataToSave(method, profile) {    
+    if (!isActive) return;
+    
+    let profileData = profiles[profile];
     let paymentValueArray = [];
 
-    profileData.loanTable.forEach((item) => {
-        paymentValueArray.push(item.payment);
-    });
+    if (method == "update") { 
+        profileData.loanTable.forEach((item) => {
+            paymentValueArray.push(item.payment);
+        });
+    }
 
-    showToastNotification(`Saving "${selectedProfile}..."`);
+    showToastNotification(`Saving "${profile}..."`);
 
     saveDataToServer({
         method: method,
-        name: selectedProfile,
+        name: profile,
         amount: profileData.loanAmount,
         interest: profileData.interestRate,
         terms: profileData.term,
@@ -227,70 +176,17 @@ function collectDataToSave(method) {
     });
 }
 
-function numberFormat(number, places = 2) {
-    let rounded = Math.round(number * Math.pow(10, places)) / Math.pow(10, places);
-
-    let num = parseFloat(rounded).toLocaleString(undefined, { maximumFractionDigits: places });
-
-    let decimals = num.toString().split(".")[1];
-    if (decimals === undefined) {
-        num += ".".padEnd(places + 1, 0);
-    } else if (decimals.length < places) {
-        num += "0".padEnd(places - decimals.length);
-    }
-
-    return num;
-}
-
-function stringToNumber(data) {
-    str = data.toString();
-
-    if (str.indexOf(".") > -1) {
-        split = str.split(".");
-
-        if (split[1] === undefined) return 0;
-
-        split[0] = split[0].replace(/\D+/g, "");
-        split[1] = split[1].replace(/\D+/g, "");
-
-        return parseFloat(`${split[0]}.${split[1]}`);
-    } else {
-        return str.replace(/\D+/g, "");
-    }
-}
-
 function paymentTextChange(control, monthIndex) {
-    console.log("sp", selectedProfile);
     let value = stringToNumber(_(`input#payment${monthIndex}`).value);
-    console.log("val", value);
+
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
     updateTableDisplay(monthIndex);
 
-    clearTimeout(saveDelay);
-    saveDelay = setTimeout(() => collectDataToSave("update"), 2500);
-}
-
-function updateAnnum(control) {
-    let value = (stringToNumber(control.value)||DEFAULT.INTEREST) * 12;
-
-    _("input#txtInterestAnnum").value = numberFormat(value, 2);
-}
-
-function updateInterest(control) {
-    let value = (stringToNumber(control.value)||DEFAULT.ANNUM) / 12;
-
-    _("input#txtInterest").value = numberFormat(value, 2);
-}
-
-function equalizePayments(monthIndex) {
-    let monthly = stringToNumber(_(`td#payment${monthIndex}`).innerText);
-    _(`input#payment${monthIndex}`).value = monthly;
-    paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
-}
-
-function showToastNotification(message, title = "Notification") {
-    $('strong#toast-title').html(title);
-    $('div.toast-body').html(message);
-    $('div.toast').toast('show');
+    let currentProfile = selectedProfile;
+    clearTimeout(saveDelay[currentProfile]);
+    saveDelay[currentProfile] = setTimeout(
+        () => collectDataToSave("update", currentProfile),
+        2500
+    );
 }
