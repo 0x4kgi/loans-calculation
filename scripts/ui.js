@@ -95,7 +95,7 @@ function appendToTable({
 }
 
 function updateTableDisplay(monthIndex) {
-    console.log("updating table of ", selectedProfile);
+    
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
@@ -140,4 +140,12 @@ function stringToNumber(data) {
     } else {
         return str.replace(/\D+/g, "");
     }
+}
+
+function updateLoanInformation() {
+    let interest = profiles[selectedProfile].getTotalInterest();
+    let principal = profiles[selectedProfile].getTotalPrincipal();
+    let payment = profiles[selectedProfile].getTotalPayment();
+
+    
 }
