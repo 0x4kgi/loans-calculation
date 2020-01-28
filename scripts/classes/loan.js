@@ -141,7 +141,7 @@ class LoanProfile extends LoanFunctions {
         let totalInterest = 0;
 
         data.forEach(item => {
-            if (item.hasPayment) totalInterest += item.interest;
+            totalInterest += item.interest;
         });
 
         return totalInterest;

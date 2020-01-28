@@ -147,6 +147,7 @@ function numberFormat(number, places = 2) {
         maximumFractionDigits: places,
     });
 
+
     let decimals = num.toString().split(".")[1];
     if (decimals === undefined) {
         num += ".".padEnd(places + 1, 0);
@@ -159,6 +160,8 @@ function numberFormat(number, places = 2) {
 
 function stringToNumber(data) {
     str = data.toString();
+
+    if(str.length == 0) return 0;
 
     if (str.indexOf(".") > -1) {
         split = str.split(".");
@@ -195,5 +198,8 @@ function showNextRow(monthIndex) {
     if (nextRow !== null && nextRow.style.display != "table-row") {
         nextRow.style.backgroundColor = bgGreen;
         nextRow.style.display = "table-row";
+
+        nextRow.scrollIntoView();
+        _(`input#payment${monthIndex + 1}`).focus();
     }
 }

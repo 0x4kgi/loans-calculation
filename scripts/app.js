@@ -191,6 +191,8 @@ function paymentTextChange(control, monthIndex) {
     if (value == "") {
         _(`input#payment${monthIndex}`).value = 0;
         value = -1;
+    } else {
+        value = stringToNumber(value);
     }
 
     profiles[selectedProfile].setMonthData(value, monthIndex);
