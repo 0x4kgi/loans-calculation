@@ -16,20 +16,21 @@ var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
-var saveDelay = {}; var btnTableUpdate;
+var saveDelay = {};
+var btnTableUpdate;
 
 function controlsEventBind() {
     clearTextBoxes();
 
-    $("button#btnUpdateTable").on("click", function () {
+    $("button#btnUpdateTable").on("click", function() {
         let childCount = $("select#loanProfile")[0].childElementCount;
 
         if (childCount < 1) {
             alert("Create a profile first!");
             return;
         }
-        let varcheck = checkVars();
-        if (!varcheck) {
+
+        if (!checkVars()) {
             return;
         }
 
@@ -44,14 +45,14 @@ function controlsEventBind() {
             createLoanProfile(selectedProfile);
 
             clearTimeout(btnTableUpdate);
-            btnTableUpdate = setTimeout(() =>
-                collectDataToSave("update", selectedProfile),
+            btnTableUpdate = setTimeout(
+                () => collectDataToSave("update", selectedProfile),
                 500
             );
         }
     });
 
-    $("select#loanProfile").on("change", function () {
+    $("select#loanProfile").on("change", function() {
         _("input#txtLoans").value = "";
         _("input#txtInterest").value = "";
         _("input#txtYears").value = "";
@@ -67,7 +68,7 @@ function controlsEventBind() {
         }
     });
 
-    $("button#btnNewProfile").on("click", function () {
+    $("button#btnNewProfile").on("click", function() {
         let newName = $("input#newProfile").val();
 
         clearTextBoxes();
@@ -114,7 +115,9 @@ function createLoanProfile(selectedProfile) {
 function loadSelectedProfile(profileData) {
     $("input#txtLoans").val(profileData.loanAmount);
     $("input#txtInterest").val(numberFormat(profileData.interestRate));
-    $("input#txtInterestAnnum").val(numberFormat(profileData.interestRate * 12));
+    $("input#txtInterestAnnum").val(
+        numberFormat(profileData.interestRate * 12)
+    );
     $("input#txtYears").val(profileData.term / 12);
 
     //var selectedProfile, loanAmount, interestRate, monthsCount;
@@ -215,25 +218,25 @@ function paymentTextChange(control, monthIndex) {
 }
 function checkVars() {
     let ret = true;
-    let check = $('input#txtLoans').val();
-    if ((!NaturalNumber(check)) && (!check == "")) {
+    let check = $("input#txtLoans").val();
+    if (!NaturalNumber(check) && !check == "") {
         alert("Loan Amount cannot be less than or equal to 0");
-        ret =  false;
+        ret = false;
     }
-    check = $('input#txtInterest').val();
-    if ((!NaturalNumber(check)) && (!check == "")) {
+    check = $("input#txtInterest").val();
+    if (!NaturalNumber(check) && !check == "") {
         alert("Monthly Interest cannot be less than or equal to 0");
         ret = false;
     }
-    check = $('input#txtInterestAnnum').val();
-    if ((!NaturalNumber(check)) && (!check == "")) {
+    check = $("input#txtInterestAnnum").val();
+    if (!NaturalNumber(check) && !check == "") {
         alert("Yearly Interest cannot be less than or equal to 0");
-        ret =  false;
+        ret = false;
     }
-    check = $('input#txtYears').val();
-    if ((!NaturalNumber(check)) && (!check == "")) {
-        alert("Tearm duration cannot be less than or equal to 0");
-        ret =  false;
+    check = $("input#txtYears").val();
+    if (!NaturalNumber(check) && !check == "") {
+        alert("Term duration cannot be less than or equal to 0");
+        ret = false;
     }
     return ret;
 }
