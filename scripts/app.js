@@ -164,7 +164,7 @@ function collectDataToSave(method, profile) {
         });
     }
 
-    showToastNotification(`Saving "${profile}..."`);
+    showToastNotification(`Saving "${profile}"...`);
 
     saveDataToServer({
         method: method,

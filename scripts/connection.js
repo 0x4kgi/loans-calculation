@@ -28,7 +28,7 @@ function saveDataToServer(params) {
         success: () => {
             showToastNotification(`Profile "${params.name}" has been saved!`);
         },
-        error: (data) => {
+        error: data => {
             showToastNotification(
                 `Could not save "${params.name}". ${data.responseText}`
             );

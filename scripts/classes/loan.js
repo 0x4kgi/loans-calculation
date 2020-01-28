@@ -36,10 +36,7 @@ class LoanFunctions extends LoanFormulas {
                 loan: this.loanAmount,
             });
 
-            let payment =
-                this.payments === undefined || this.payments !== undefined
-                    ? 0
-                    : this.payments[i];
+            let payment = this.payments === undefined ? 0 : this.payments[i];
 
             let interest = this.interestValueCalculation(
                 balance,
