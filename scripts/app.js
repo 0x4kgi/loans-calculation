@@ -21,11 +21,15 @@ var saveDelay = {}; var btnTableUpdate;
 function controlsEventBind() {
     clearTextBoxes();
 
-    $("button#btnUpdateTable").on("click", function() {
+    $("button#btnUpdateTable").on("click", function () {
         let childCount = $("select#loanProfile")[0].childElementCount;
 
         if (childCount < 1) {
             alert("Create a profile first!");
+            return;
+        }
+        let varcheck = checkVars();
+        if (!varcheck) {
             return;
         }
 
@@ -36,7 +40,7 @@ function controlsEventBind() {
         if (profileData === undefined || profileData === null) {
             createLoanProfile(selectedProfile);
             collectDataToSave("add", selectedProfile);
-        } else {            
+        } else {
             createLoanProfile(selectedProfile);
 
             clearTimeout(btnTableUpdate);
@@ -47,7 +51,7 @@ function controlsEventBind() {
         }
     });
 
-    $("select#loanProfile").on("change", function() {
+    $("select#loanProfile").on("change", function () {
         _("input#txtLoans").value = "";
         _("input#txtInterest").value = "";
         _("input#txtYears").value = "";
@@ -63,7 +67,7 @@ function controlsEventBind() {
         }
     });
 
-    $("button#btnNewProfile").on("click", function() {
+    $("button#btnNewProfile").on("click", function () {
         let newName = $("input#newProfile").val();
 
         clearTextBoxes();
@@ -109,8 +113,8 @@ function createLoanProfile(selectedProfile) {
 
 function loadSelectedProfile(profileData) {
     $("input#txtLoans").val(profileData.loanAmount);
-    $("input#txtInterest").val(numberFormat( profileData.interestRate ));
-    $("input#txtInterestAnnum").val(numberFormat( profileData.interestRate * 12 ));
+    $("input#txtInterest").val(numberFormat(profileData.interestRate));
+    $("input#txtInterestAnnum").val(numberFormat(profileData.interestRate * 12));
     $("input#txtYears").val(profileData.term / 12);
 
     //var selectedProfile, loanAmount, interestRate, monthsCount;
@@ -208,4 +212,34 @@ function paymentTextChange(control, monthIndex) {
         () => collectDataToSave("update", currentProfile),
         2500
     );
+}
+function checkVars() {
+    let ret = true;
+    let check = $('input#txtLoans').val();
+    if ((!NaturalNumber(check)) && (!check == "")) {
+        alert("Loan Amount cannot be less than or equal to 0");
+        ret =  false;
+    }
+    check = $('input#txtInterest').val();
+    if ((!NaturalNumber(check)) && (!check == "")) {
+        alert("Monthly Interest cannot be less than or equal to 0");
+        ret = false;
+    }
+    check = $('input#txtInterestAnnum').val();
+    if ((!NaturalNumber(check)) && (!check == "")) {
+        alert("Yearly Interest cannot be less than or equal to 0");
+        ret =  false;
+    }
+    check = $('input#txtYears').val();
+    if ((!NaturalNumber(check)) && (!check == "")) {
+        alert("Tearm duration cannot be less than or equal to 0");
+        ret =  false;
+    }
+    return ret;
+}
+function NaturalNumber(check) {
+    if (stringToNumber(check) > 0) {
+        return true;
+    }
+    return false;
 }
