@@ -27,8 +27,6 @@ class Debtor
     public function Delete($params) 
     {
         $this->name = $params['name'];
-        $this->loan = new LoanData;
-        $this->loan->Build($params);
         $this->Save("delete");
     }
 
