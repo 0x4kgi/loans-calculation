@@ -1,3 +1,13 @@
+function clearTextBoxes() {
+    _("input#txtLoans").value = "";
+    _("input#txtInterest").value = "";
+    _("input#txtInterestAnnum").value = "";
+    _("input#txtYears").value = "";
+    _("input#txtTotalInterest").value = "";
+    _("input#txtTotalPrincipal").value = "";
+    _("input#txtTotalPayment").value = "";
+}
+
 function updateAnnum(control) {
     let value = (stringToNumber(control.value) || DEFAULT.INTEREST) * 12;
 
@@ -16,11 +26,13 @@ function equalizePayments(monthIndex) {
     paymentTextChange(_(`input#payment${monthIndex}`), monthIndex);
 }
 
+let toastCounter = 0;
 function showToastNotification(message, title = "Notification") {
     let toastString = `
-    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2500" data-animation="true">
+    <div class="toast" id="toast-${toastCounter}" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2500" data-animation="true">
         <div class="toast-header">
             <strong class="mr-auto" id="toast-title">${title}</strong>
+            <small>${toastCounter}</small>
             <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -31,13 +43,12 @@ function showToastNotification(message, title = "Notification") {
 
     $("div#toasts-container").append(toastString);
 
-    $("div.toast").toast("show");
+    $(`div#toast-${toastCounter}`).toast("show");
 
-    toastClear = setTimeout(() => {
-        $("div#toasts-container").html("");
-    }, 3000);
+    toastCounter += 1;
 }
 
+var firstFalse = true;
 function appendToTable({
     month,
     balance,
@@ -46,9 +57,31 @@ function appendToTable({
     principal,
     newBalance,
     payment,
+    hasPayment,
 }) {
+    let isRowDisplayed = true;
+    let isHighlighted = false;
+
+    let prevValue = _(`input#payment${month - 1}`);
+
+    if (prevValue !== null) {
+        isRowDisplayed = prevValue.value === "" ? false : true;
+    }
+
+    if (hasPayment != true) {
+        isHighlighted = true;
+    }
+
     $("tbody#tblLoans").append(`
-        <tr id="rowMonth${month}">
+        <tr 
+            id="rowMonth${month}" 
+            style="
+                display: ${isRowDisplayed ? "table-row" : "none"}; 
+                background-color: ${
+                    isHighlighted ? "rgba(0,255,0,0.5)" : "#FFF"
+                };
+            "
+        >
             <td class="text-center">${month + 1}</td>
             <td class="text-right" 
                 id="balance${month}">
@@ -71,9 +104,9 @@ function appendToTable({
                     <input 
                         type="text" 
                         class="form-control text-right" 
-                        placeholder="0.00" 
+                        placeholder="Enter payment" 
                         id="payment${month}"
-                        value="${payment || ""}"
+                        value="${payment > -1 ? payment : ""}"
                         onchange="paymentTextChange(this,${month})"
                     >
                 </div>                        
@@ -95,7 +128,6 @@ function appendToTable({
 }
 
 function updateTableDisplay(monthIndex) {
-    
     for (let i = monthIndex; i < monthsCount; i++) {
         let data = profiles[selectedProfile].getMonthData(i);
 
@@ -150,4 +182,18 @@ function updateLoanInformation() {
     _("input#txtTotalInterest").value = numberFormat(interest);
     _("input#txtTotalPayment").value = numberFormat(payment);
     _("input#txtTotalPrincipal").value = numberFormat(principal);
+}
+
+function showNextRow(monthIndex) {
+    let bgWhite = "#FFF";
+    let bgGreen = "rgba(0,255,0,0.5)";
+
+    _(`tr#rowMonth${monthIndex}`).style.backgroundColor = bgWhite;
+
+    let nextRow = _(`tr#rowMonth${monthIndex + 1}`);
+
+    if (nextRow !== null && nextRow.style.display != "table-row") {
+        nextRow.style.backgroundColor = bgGreen;
+        nextRow.style.display = "table-row";
+    }
 }

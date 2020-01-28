@@ -16,9 +16,11 @@ var profiles = {};
 
 var selectedProfile, loanAmount, interestRate, monthsCount;
 
-var saveDelay = {};
+var saveDelay = {}; var btnTableUpdate;
 
 function controlsEventBind() {
+    clearTextBoxes();
+
     $("button#btnUpdateTable").on("click", function() {
         let childCount = $("select#loanProfile")[0].childElementCount;
 
@@ -34,9 +36,14 @@ function controlsEventBind() {
         if (profileData === undefined || profileData === null) {
             createLoanProfile(selectedProfile);
             collectDataToSave("add", selectedProfile);
-        } else {
+        } else {            
             createLoanProfile(selectedProfile);
-            collectDataToSave("update", selectedProfile);
+
+            clearTimeout(btnTableUpdate);
+            btnTableUpdate = setTimeout(() =>
+                collectDataToSave("update", selectedProfile),
+                500
+            );
         }
     });
 
@@ -58,6 +65,8 @@ function controlsEventBind() {
 
     $("button#btnNewProfile").on("click", function() {
         let newName = $("input#newProfile").val();
+
+        clearTextBoxes();
 
         if (!newName) {
             alert("Enter a name!");
@@ -84,7 +93,7 @@ function createBlankProfile(newName) {
 
 function createLoanProfile(selectedProfile) {
     loanAmount = $("input#txtLoans").val() || DEFAULT.LOAN_AMOUNT;
-    interestRate = ($("input#txtInterest").val() || DEFAULT.INTEREST);
+    interestRate = $("input#txtInterest").val() || DEFAULT.INTEREST;
     monthsCount = ($("input#txtYears").val() || DEFAULT.YEARS) * 12;
 
     let profileData = new LoanProfile({
@@ -96,13 +105,12 @@ function createLoanProfile(selectedProfile) {
     profiles[selectedProfile] = profileData;
 
     tableDisplay(profileData);
-    
 }
 
 function loadSelectedProfile(profileData) {
     $("input#txtLoans").val(profileData.loanAmount);
-    $("input#txtInterest").val(profileData.interestRate);
-    $("input#txtInterestAnnum").val(profileData.interestRate * 12);
+    $("input#txtInterest").val(numberFormat( profileData.interestRate ));
+    $("input#txtInterestAnnum").val(numberFormat( profileData.interestRate * 12 ));
     $("input#txtYears").val(profileData.term / 12);
 
     //var selectedProfile, loanAmount, interestRate, monthsCount;
@@ -146,6 +154,7 @@ function tableDisplay(profileData) {
             principal: row.principal,
             newBalance: row.newBalance,
             payment: row.payment,
+            hasPayment: row.hasPayment,
         });
     }
 
@@ -177,12 +186,18 @@ function collectDataToSave(method, profile) {
 }
 
 function paymentTextChange(control, monthIndex) {
-    let value = stringToNumber(_(`input#payment${monthIndex}`).value);
+    let value = _(`input#payment${monthIndex}`).value;
+
+    if (value == "") {
+        _(`input#payment${monthIndex}`).value = 0;
+        value = -1;
+    }
 
     profiles[selectedProfile].setMonthData(value, monthIndex);
 
     updateTableDisplay(monthIndex);
     updateLoanInformation();
+    showNextRow(monthIndex);
 
     let currentProfile = selectedProfile;
 

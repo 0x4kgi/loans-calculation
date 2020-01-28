@@ -16,6 +16,7 @@ class LoanFormulas {
     }
 
     principalCalculation(payment, interestValue = 0) {
+        if (payment < 0) return 0;
         if (payment == 0) return 0;
 
         return payment ? payment - interestValue : 0;
@@ -32,11 +33,14 @@ class LoanFunctions extends LoanFormulas {
         for (let i = 0; i < this.term; i += 1) {
             let toPay = this.pmt({
                 rate: this.interestRate,
-                term: this.term - i,
+                term: this.term,
                 loan: this.loanAmount,
             });
 
-            let payment = this.payments === undefined ? 0 : this.payments[i];
+            let payment =
+                this.payments === undefined || this.payments === null
+                    ? -1
+                    : this.payments[i];
 
             let interest = this.interestValueCalculation(
                 balance,
@@ -44,6 +48,8 @@ class LoanFunctions extends LoanFormulas {
             );
 
             let principal = 0;
+
+            let hasPayment = false;
 
             let newBalance = balance;
 
@@ -54,17 +60,27 @@ class LoanFunctions extends LoanFormulas {
                 payment,
                 interest,
                 principal,
+                hasPayment,
                 newBalance,
             });
         }
 
-        if (this.payments !== undefined || this.payments !== null)
+        if (this.payments !== undefined && this.payments !== null)
             this.updateTable();
     }
 
     updateTable() {
         let data = this.loanTable;
+
         let balance = data[0].balance;
+
+        let maximumMonthWithPayment = -1;
+
+        data.forEach((data, index) => {
+            if (data.payment > -1 && index > maximumMonthWithPayment) {
+                maximumMonthWithPayment = index;
+            }
+        });
 
         for (let i = 0; i < this.term; i++) {
             let toPay = this.pmt({
@@ -78,6 +94,7 @@ class LoanFunctions extends LoanFormulas {
                 this.interestRate
             );
             let principal = this.principalCalculation(payment, interest);
+            let hasPayment = i <= maximumMonthWithPayment ? true : false;
             let newBalance = balance - principal;
             data[i] = {
                 month: i,
@@ -86,6 +103,7 @@ class LoanFunctions extends LoanFormulas {
                 payment,
                 interest,
                 principal,
+                hasPayment,
                 newBalance,
             };
             balance = newBalance;
@@ -109,6 +127,7 @@ class LoanProfile extends LoanFunctions {
             this.interestRate
         );
         data.principal = this.principalCalculation(payment, data.interest);
+        data.hasPayment = true;
         data.newBalance = data.balance - data.principal;
         this.updateTable();
     }
@@ -122,7 +141,7 @@ class LoanProfile extends LoanFunctions {
         let totalInterest = 0;
 
         data.forEach(item => {
-            totalInterest += item.interest;
+            if (item.hasPayment) totalInterest += item.interest;
         });
 
         return totalInterest;
@@ -133,7 +152,7 @@ class LoanProfile extends LoanFunctions {
         let totalPrincipal = 0;
 
         data.forEach(item => {
-            totalPrincipal += item.principal;
+            if (item.hasPayment) totalPrincipal += item.principal;
         });
 
         return totalPrincipal;
@@ -144,7 +163,7 @@ class LoanProfile extends LoanFunctions {
         let totalPayment = 0;
 
         data.forEach(item => {
-            totalPayment += parseFloat(item.payment);
+            if (item.hasPayment) totalPayment += parseFloat(item.payment);
         });
 
         return totalPayment;
