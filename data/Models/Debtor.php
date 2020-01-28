@@ -11,17 +11,19 @@ class Debtor
         $this->ID =  hash("SHA3-512", date("ymdhisu"));
         $this->name = $params['name'];
         $this->loan = new LoanData;
+        $this->loan->Build($params);
         $this->Save("new");
     }
     public function Update($params)
     {
+        $this->name = $params['name'];
         $this->loan = new LoanData;
         $this->loan->Build($params);
         $this->Save("update");
     }
     public function Retrieve($ID)
     {
-        $sql = "SELECT `ID`, `name`, loans  FROM debtor WHERE ID = ?";
+        $sql = "SELECT `name`, `loans` FROM debtor WHERE `name` = ?";
         $Database = new MySqlConnection("loan_app", "root", "", "localhost");
         $stmt = $Database->conn->prepare($sql);
         $stmt->bind_param("s", $ID);
@@ -30,18 +32,18 @@ class Debtor
         if ($result->num_rows > 0) {
             $this->Build_Model($result->fetch_assoc());
         } else {
-            throw new Exception("Cannot find record of entry ID " . $ID);
+            throw new Exception("Cannot find record of entry {$ID} ");
         }
     }
     private function Save($mode)
     {
         $json_loan = json_encode($this->loan);
-        if ($mode == "edit") {
+        if ($mode == "update") {
             try {
-                $sql = "UPDATE debtor SET `name` = ?, loans = ? WHERE `ID` = ?";
+                $sql = "UPDATE debtor SET loans = ? WHERE `name` = ?";
                 $Database = new MySqlConnection("loan_app", "root", "", "localhost");
                 $stmt = $Database->conn->prepare($sql);
-                $stmt->bind_param("sss", $this->name, $json_loan, $this->ID);
+                $stmt->bind_param("ss", $json_loan, $this->name);
                if (!$stmt->execute()) {
                   throw new Exception("Failed to execute SQL query");
                }
@@ -51,20 +53,19 @@ class Debtor
             }
          }
          try {
-            $sql = "INSERT INTO debtor (`ID`, `name`, loans) VALUES(?,?,?)";
+            $sql = "INSERT INTO debtor (`name`, `loans`) VALUES(?,?)";
             $Database = new MySqlConnection("loan_app", "root", "", "localhost");
             $stmt = $Database->conn->prepare($sql);
-            $stmt->bind_param("sss", $this->ID, $this->name, $json_loan);
+            $stmt->bind_param("ss", $this->name, $json_loan);
             if (!$stmt->execute()) {
                throw new Exception("Failed to execute query");
             }
          } catch (Exception $ex) {
-                 throw $ex;
+            throw $ex;
          }
     }
     private function Build_Model($row)
     {
-        $this->ID = $row['ID'];
         $this->name = $row['name'];
         $this->loan = json_decode($row['loans']);
     }

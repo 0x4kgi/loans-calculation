@@ -1,5 +1,5 @@
 var isActive = null;
-var reconnectTime = 4000;
+var reconnectTime = 60000;
 
 function isServerActive(callback) {
     $.ajax("data/check.php", {
@@ -11,18 +11,27 @@ function isServerActive(callback) {
 
 function grabDataFromServer() {
     if (!isActive) return;
-
-    //$.ajax();
+    $.ajax("data/Routes/FetchData.php", {
+        success: data => loadProfilesFromServer(data),
+        error: () => {
+            showToastNotification("Something went wrong");
+        },
+    });
 }
 
 function saveDataToServer(params) {
     if (!isActive) return;
 
-    $.ajax("data/update.php", {
+    $.ajax("data/Routes/StoreData.php", {
         method: "POST",
         data: params,
-        success: function (data) {
-            showToastNotification(`Profile "${selectedProfile}" has been saved!`);
+        success: () => {
+            showToastNotification(`Profile "${params.name}" has been saved!`);
+        },
+        error: (data) => {
+            showToastNotification(
+                `Could not save "${params.name}". ${data.responseText}`
+            );
         },
     });
 }
@@ -30,7 +39,8 @@ function saveDataToServer(params) {
 function serverCheck(data, status) {
     if (data.status === 200) {
         isActive = true;
-        showToastNotification("Connected to the server!");
+        showToastNotification("Retrieving data from server...");
+        grabDataFromServer();
     } else if (status === "error") {
         if (isActive == null) {
             createBlankProfile("Default Profile");
@@ -39,12 +49,16 @@ function serverCheck(data, status) {
 
         showToastNotification(`
             Cannot connect to the server, no data will be saved this session. 
-            Retrying in ${reconnectTime / 1000} seconds
+            Retrying in ${reconnectTime / 60000} minute${
+                reconnectTime > 60000 ? "s" : ""
+            }.
         `);
 
         tryToReconnect();
     } else {
-        showToastNotification("Running in server-less mode, everything will reset upon reload.");
+        showToastNotification(
+            "Running in server-less mode, everything will reset upon reload."
+        );
         isActive = false;
     }
 }

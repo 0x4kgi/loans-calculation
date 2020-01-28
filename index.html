@@ -1,128 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-    <link rel="stylesheet" href="scripts/css/vendors/bootstrap.min.css">
+        <link rel="stylesheet" href="scripts/css/vendors/bootstrap.min.css" />
 
-    <title>Loan calculation</title>
-</head>
-<body>
-    <div class="container">
-        <div class="row">
-            <div class="form-group col-sm">
-                <label for="sel1">Select profile:</label>
-                <select class="form-control" id="loanProfile"></select>                
-            </div>
-            <div class="form-group col-sm">
-                <label for="newProfile">New Profile name:</label>
-                <div class="input-group">
-                    <input type="text" id="newProfile" class="form-control">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-primary" id="btnNewProfile">New Profile</button>
+        <title>Loan calculation</title>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="form-group col-sm">
+                        <label for="txtLoans">Loan Amount:</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="10000"
+                            id="txtLoans"
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <label for="txtInterest">Interest /month</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="2.5"
+                            id="txtInterest"
+                            onkeyup="updateAnnum(this)"
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <label for="txtInterestAnnum">Interest /annum</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="30.00"
+                            id="txtInterestAnnum"
+                            onkeyup="updateInterest(this)"
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <label for="txtYears">Terms (years)</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="3"
+                            id="txtYears"
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <button
+                            type="button"
+                            class="btn btn-primary col-sm"
+                            id="btnUpdateTable"
+                        >
+                            Set Values
+                        </button>
+                    </div>
+                    <hr />
+                    <div class="form-group col-sm">
+                        <label for="txtTotalInterest">Total Interest</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="0.00"
+                            id="txtTotalInterest"
+                            readonly
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <label for="txtTotalPrincipal">Total Principal</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="0.00"
+                            id="txtTotalPrincipal"
+                            readonly
+                        />
+                    </div>
+                    <div class="form-group col-sm">
+                        <label for="txtTotalPayment">Total Payment</label>
+                        <input
+                            type="text"
+                            class="form-control text-right"
+                            placeholder="0.00"
+                            id="txtTotalPayment"
+                            readonly
+                        />
                     </div>
                 </div>
-            </div> 
-        </div>
-        <div class="row">
-            <div class="input-group col-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Loan Amount:</span>
+                <div class="col-sm">
+                    <div class="row">
+                        <div class="form-group col-sm">
+                            <label for="sel1">Select profile:</label>
+                            <select
+                                class="form-control"
+                                id="loanProfile"
+                            ></select>
+                        </div>
+                        <div class="form-group col-sm">
+                            <label for="newProfile">New Profile name:</label>
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    id="newProfile"
+                                    class="form-control"
+                                />
+                                <div class="input-group-append">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        id="btnNewProfile"
+                                    >
+                                        New Profile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <table class="table table-bordered table-sm col-sm">
+                            <thead>
+                                <th>Month #</th>
+                                <th>Balance</th>
+                                <th>Amount to pay</th>
+                                <th>Payment</th>
+                                <th>Interest</th>
+                                <th>Principal</th>
+                                <th>New Balance</th>
+                            </thead>
+                            <tbody id="tblLoans"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="input-group-prepend">
-                    <span class="input-group-text ">$</span>
-                </div>
-                <input type="text" class="form-control text-right" placeholder="10000" id="txtLoans">
             </div>
-            <div class="input-group col-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Interest:</span>
-                </div>                
-                <input 
-                    type="text" 
-                    class="form-control text-right" 
-                    placeholder="2.5" 
-                    id="txtInterest"
-                    onkeyup="updateAnnum(this)"
-                >
-                <div class="input-group-append">
-                    <span class="input-group-text">% /month</span>
-                </div>
-            </div>
-            <div class="input-group col-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Interest:</span>
-                </div>                
-                <input 
-                    type="text" 
-                    class="form-control text-right" 
-                    placeholder="30.00" 
-                    id="txtInterestAnnum"
-                    onkeyup="updateInterest(this)"
-                >
-                <div class="input-group-append">
-                    <span class="input-group-text">% /annum</span>
-                </div>
-            </div>
-            <div class="input-group col-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Terms:</span>
-                </div>                
-                <input type="text" class="form-control text-right" placeholder="3" id="txtYears">
-                <div class="input-group-append">
-                    <span class="input-group-text">years</span>
-                </div>
-            </div>                      
         </div>
-        <br>
-        <div class="row">
-            <div class="col-sm text-center">
-                <button type="button" class="btn btn-primary" id="btnUpdateTable">Set Values</button>
-            </div>
-        </div>        
-    </div>
-    <br>
-    <div class="container">
-        <div class="row">
-            <table class="table table-bordered table-sm col-sm">
-                <thead>
-                    <th>Month #</th>
-                    <th>Balance</th>
-                    <th>Amount to pay</th>
-                    <th>Payment</th>
-                    <th>Interest</th>
-                    <th>Principal</th>
-                    <th>New Balance</th>
-                </thead>
-                <tbody id="tblLoans">
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" data-animation="true" style="position: fixed; bottom: 1rem; right: 1rem; z-index:99999">
-        <div class="toast-header">
-            <strong class="mr-auto" id="toast-title"></strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="toast-body"></div>
-        </div>
-    </div>
-    <script src="scripts/vendors/jquery-3.4.1.min.js"></script>
-    <script src="scripts/vendors/popper.min.js"></script>
-    <script src="scripts/vendors/bootstrap.min.js"></script>
 
-    <script src="scripts/classes/main.js"></script>
-    <script src="scripts/app.js"></script>
-    <script src="scripts/connection.js"></script>
-    <script>
-        $(document).ready(function () {
-            controlsEventBind();
-            isServerActive(serverCheck);
-        });
-    </script>
-</body>
+        <div aria-live="polite" aria-atomic="true">
+            <div
+                id="toasts-container"
+                style="position: fixed; bottom: 1rem; left: 1rem;"
+            ></div>
+        </div>
+        <script src="scripts/vendors/jquery-3.4.1.min.js"></script>
+        <script src="scripts/vendors/popper.min.js"></script>
+        <script src="scripts/vendors/bootstrap.min.js"></script>
+
+        <script src="scripts/classes/loan.js"></script>
+        <script src="scripts/app.js"></script>
+        <script src="scripts/ui.js"></script>
+        <script src="scripts/connection.js"></script>
+        <script>
+            $(document).ready(function() {
+                controlsEventBind();
+                isServerActive(serverCheck);
+            });
+        </script>
+    </body>
 </html>
