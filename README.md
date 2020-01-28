@@ -1,2 +1,2 @@
-# loans-calculation
+# loans-calculation [![CodeFactor](https://www.codefactor.io/repository/github/0x4kgi/loans-calculation/badge/master)](https://www.codefactor.io/repository/github/0x4kgi/loans-calculation/overview/master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/41b2c184c0a842aa9db181a667744cdf)](https://www.codacy.com/manual/0x4kgi/loans-calculation?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=0x4kgi/loans-calculation&amp;utm_campaign=Badge_Grade) 
  from excel to html
