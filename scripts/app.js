@@ -71,6 +71,8 @@ function controlsEventBind() {
     $("button#btnNewProfile").on("click", function() {
         let newName = $("input#newProfile").val();
 
+        newName = newName.replace(/(<([^>]+)>|\")/ig, "");
+
         clearTextBoxes();
 
         if (!newName) {
