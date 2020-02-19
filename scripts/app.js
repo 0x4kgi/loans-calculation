@@ -58,7 +58,7 @@ function controlsEventBind() {
         _("input#txtYears").value = "";
 
         selectedProfile = $("select#loanProfile").val();
-
+        
         let profileData = profiles[selectedProfile];
 
         if (profileData !== undefined && profileData !== null) {
